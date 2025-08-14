@@ -16,9 +16,6 @@ extern "C" {
 #include "88q211x.h"
 
 
-phy_status_t PHY_88Q211X_SoftwareReset(phy_handle_88q211x_t *dev);
-
-
 #ifdef __cplusplus
 }
 #endif

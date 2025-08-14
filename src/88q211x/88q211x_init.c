@@ -183,6 +183,8 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     PHY_CHECK_CONFIG_MEMBERS(phy_config_88q211x_t);
 
     phy_status_t status = PHY_OK;
+    uint16_t     reg_data;
+
 
     /* Check the device hasn't already been initialised. Note this may cause an unintended error if the struct uses non-zeroed memory. */
     if (dev->state != PHY_STATE_88Q211X_UNCONFIGURED) status = PHY_ALREADY_CONFIGURED;
@@ -237,7 +239,11 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     status = PHY_88Q211X_CheckID(dev);
     PHY_CHECK_END;
 
-    /* TODO: Check speed & mode */
+    /* Check speed & mode */
+    PHY_READ_REG(PHY_88Q211X_DEV_BASE_T1_PMA_PMD_CTRL, PHY_88Q211X_REG_BASE_T1_PMA_PMD_CTRL, &reg_data);
+    PHY_CHECK_END;
+    dev->role  = (reg_data & PHY_88Q211X_MASTER) ? PHY_ROLE_MASTER : PHY_ROLE_SLAVE;
+    dev->speed = (((reg_data & PHY_88Q211X_SPEED_MASK) >> PHY_88Q211X_SPEED_SHIFT) == PHY_88Q211X_SPEED_100M) ? PHY_SPEED_100M : PHY_SPEED_1G; /* TODO: Also check for invalid speed */
 
     /* Configure RGMII timing */
     if (dev->config.interface == PHY_INTERFACE_RGMII) {

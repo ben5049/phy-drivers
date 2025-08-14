@@ -91,9 +91,12 @@ phy_status_t PHY_88Q211X_EnableInterrupts(phy_handle_88q211x_t *dev);
 phy_status_t PHY_88Q211X_DisableInterrupts(phy_handle_88q211x_t *dev);
 phy_status_t PHY_88Q211X_ProcessInterrupt(phy_handle_88q211x_t *dev);
 
-phy_status_t PHY_88Q211X_GetLinkState(phy_handle_88q211x_t *dev, bool *link_ok);
-phy_status_t PHY_88Q211X_GetLinkInfo(phy_handle_88q211x_t *dev, bool *link_ok, bool *remote_receiver_ok, bool *local_receiver_ok, bool *polarity_done, bool *alignment_done, bool *descrambler_locked);
+phy_status_t PHY_88Q211X_GetLinkState(phy_handle_88q211x_t *dev, bool *linkup);
+phy_status_t PHY_88Q211X_GetLinkInfo(phy_handle_88q211x_t *dev, bool *linkup, bool *remote_receiver_ok, bool *local_receiver_ok, bool *polarity_done, bool *alignment_done, bool *descrambler_locked);
 phy_status_t PHY_88Q211X_GetLinkDropCount(phy_handle_88q211x_t *dev, uint8_t links_dropped);
+
+phy_status_t PHY_88Q211X_EnableTransmit(phy_handle_88q211x_t *dev);
+phy_status_t PHY_88Q211X_DisableTransmit(phy_handle_88q211x_t *dev);
 
 phy_status_t PHY_88Q211X_EnableAutoNegotiation(phy_handle_88q211x_t *dev);
 phy_status_t PHY_88Q211X_DisableAutoNegotiation(phy_handle_88q211x_t *dev);

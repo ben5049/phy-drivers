@@ -35,7 +35,8 @@ enum phy_88q211x_pma_pmd_reg_e {
     PHY_88Q211X_REG_PMA_PMD_PKG_ID_1                  = 0x000e,
     PHY_88Q211X_REG_PMA_PMD_PKG_ID_2                  = 0x000f,
     PHY_88Q211X_REG_BASE_T1_PMA_PMD_EXT_ABILITY       = 0x0012,
-    PHY_88Q211X_REG_100BASE_T1_PMA_PMD_TEST_CTRL      = 0x0834,
+    PHY_88Q211X_REG_BASE_T1_PMA_PMD_CTRL              = 0x0834,
+    PHY_88Q211X_REG_100BASE_T1_PMA_PMD_TEST_CTRL      = 0x0836,
     PHY_88Q211X_REG_BASE_T1_CTRL                      = 0x0900,
     PHY_88Q211X_REG_1000BASE_T1_PMA_STATUS            = 0x0901,
     PHY_88Q211X_REG_1000BASE_T1_TRAINING              = 0x0902,
@@ -58,6 +59,7 @@ enum phy_88q211x_pma_pmd_dev_e {
     PHY_88Q211X_DEV_PMA_PMD_PKG_ID_1                  = 0x01,
     PHY_88Q211X_DEV_PMA_PMD_PKG_ID_2                  = 0x01,
     PHY_88Q211X_DEV_BASE_T1_PMA_PMD_EXT_ABILITY       = 0x01,
+    PHY_88Q211X_DEV_BASE_T1_PMA_PMD_CTRL              = 0x01,
     PHY_88Q211X_DEV_100BASE_T1_PMA_PMD_TEST_CTRL      = 0x01,
     PHY_88Q211X_DEV_BASE_T1_CTRL                      = 0x01,
     PHY_88Q211X_DEV_1000BASE_T1_PMA_STATUS            = 0x01,
@@ -70,11 +72,20 @@ enum phy_88q211x_pma_pmd_dev_e {
 #define PHY_88Q211X_OUI_3_18_SHIFT        (0)
 #define PHY_88Q211X_OUI_3_18_MASK         (0xffff << PHY_88Q211X_OUI_3_18_SHIFT)
 #define PHY_88Q211X_OUI_19_24_SHIFT       (10)
-#define PHY_88Q211X_OUI_19_24_MASK        (0x3f << PHY_88Q211X_OUI_19_24_SHIFT)
+#define PHY_88Q211X_OUI_19_24_MASK        (0x003f << PHY_88Q211X_OUI_19_24_SHIFT)
 #define PHY_88Q211X_MODEL_NUMBER_SHIFT    (4)
-#define PHY_88Q211X_MODEL_NUMBER_MASK     (0x3f << PHY_88Q211X_MODEL_NUMBER_SHIFT)
+#define PHY_88Q211X_MODEL_NUMBER_MASK     (0x003f << PHY_88Q211X_MODEL_NUMBER_SHIFT)
 #define PHY_88Q211X_REVISION_NUMBER_SHIFT (0)
-#define PHY_88Q211X_REVISION_NUMBER_MASK  (0xf << PHY_88Q211X_REVISION_NUMBER_SHIFT)
+#define PHY_88Q211X_REVISION_NUMBER_MASK  (0x000f << PHY_88Q211X_REVISION_NUMBER_SHIFT)
+
+#define PHY_88Q211X_MASTER                (1 << 14)
+#define PHY_88Q211X_SPEED_SHIFT           (0)
+#define PHY_88Q211X_SPEED_MASK            (0x000f << PHY_88Q211X_SPEED_SHIFT)
+#define PHY_88Q211X_SPEED_100M            (0x0)
+#define PHY_88Q211X_SPEED_1000M           (0x1)
+
+#define PHY_88Q211X_PMA_TRANSMIT_DISABLE  (1 << 14)
+#define PHY_88Q211X_IEEE_POWER_DOWN       (1 << 11) /* Both 1.0900.11 and 3.0000.11 control power down */
 
 /* ---------------------------------------------------------------------------- */
 /* Common Control Registers */
@@ -143,7 +154,12 @@ enum phy_88q211x_ctrl_dev_e {
 /* ---------------------------------------------------------------------------- */
 /* IEEE PCS Registers (Device 3) */
 /* ---------------------------------------------------------------------------- */
-
+enum phy_88q211x_pma_pmd_reg_e {
+    PHY_88Q211X_REG_PCS_CTRL_1 = 0x0000,
+};
+enum phy_88q211x_pma_pmd_dev_e {
+    PHY_88Q211X_DEV_PCS_CTRL_1 = 0x03,
+};
 
 /* ---------------------------------------------------------------------------- */
 /* IEEE Auto-Negotiation Registers */
