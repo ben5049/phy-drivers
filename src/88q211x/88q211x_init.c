@@ -8,10 +8,14 @@
 #include "88q211x.h"
 #include "internal/88q211x/88q211x_init.h"
 #include "internal/88q211x/88q211x_regs.h"
+#include "internal/88q211x/88q211x_bist.h"
 #include "internal/phy_utils.h"
 
 
 static void PHY_88Q211X_ResetEventCounters(phy_handle_88q211x_t *dev) {
+    dev->events.writes     = 0;
+    dev->events.reads      = 0;
+    dev->events.crc_errors = 0;
 }
 
 
@@ -54,7 +58,7 @@ static phy_status_t PHY_88Q211X_CheckID(phy_handle_88q211x_t *dev) {
 
 static phy_status_t PHY_88Q211X_SoftwareResetRGMII(phy_handle_88q211x_t *dev) {
 
-    phy_status_t status = PHY_NOT_IMPLEMENTED_ERROR;
+    phy_status_t status = PHY_OK;
     uint16_t     reg_data;
 
     /* Read the reset and control register */
@@ -65,14 +69,14 @@ static phy_status_t PHY_88Q211X_SoftwareResetRGMII(phy_handle_88q211x_t *dev) {
     reg_data |= PHY_88Q211X_RST_RGMII;
 
     /* Write the reset and control register */
-    PHY_READ_REG(PHY_88Q211X_DEV_RST_CTRL, PHY_88Q211X_REG_RST_CTRL, reg_data);
+    PHY_WRITE_REG(PHY_88Q211X_DEV_RST_CTRL, PHY_88Q211X_REG_RST_CTRL, reg_data);
     PHY_CHECK_RET;
 
     /* The RGMII reset bit is not self clearing so unset the RGMII reset bit */
     reg_data &= ~PHY_88Q211X_RST_RGMII;
 
     /* Write the reset and control register */
-    PHY_READ_REG(PHY_88Q211X_DEV_RST_CTRL, PHY_88Q211X_REG_RST_CTRL, reg_data);
+    PHY_WRITE_REG(PHY_88Q211X_DEV_RST_CTRL, PHY_88Q211X_REG_RST_CTRL, reg_data);
     PHY_CHECK_RET;
 
     return status;
@@ -89,13 +93,13 @@ static phy_status_t PHY_88Q211X_ConfigureRGMII(phy_handle_88q211x_t *dev) {
     PHY_READ_REG(PHY_88Q211X_DEV_RGMII_COM_PORT, PHY_88Q211X_REG_RGMII_COM_PORT, &reg_data);
     PHY_CHECK_RET;
 
-    /* If the new tx clk dely setting is different from the old one then change it and call for a reset */
+    /* If the new tx clk delay setting is different from the old one then change it and call for a reset */
     if (dev->config.tx_clk_internal_delay && !(reg_data & PHY_88Q211X_RGMII_TX_CLK_INTERNAL_DELAY)) {
         reg_data   |= PHY_88Q211X_RGMII_TX_CLK_INTERNAL_DELAY;
         write_back  = true;
     }
 
-    /* If the new rx clk dely setting is different from the old one then change it and call for a reset */
+    /* If the new rx clk delay setting is different from the old one then change it and call for a reset */
     if (dev->config.rx_clk_internal_delay && !(reg_data & PHY_88Q211X_RGMII_RX_CLK_INTERNAL_DELAY)) {
         reg_data   |= PHY_88Q211X_RGMII_RX_CLK_INTERNAL_DELAY;
         write_back  = true;
@@ -108,6 +112,64 @@ static phy_status_t PHY_88Q211X_ConfigureRGMII(phy_handle_88q211x_t *dev) {
 
         /* Reset for the change to take effect */
         status = PHY_88Q211X_SoftwareResetRGMII(dev);
+        PHY_CHECK_RET;
+    }
+
+    return status;
+}
+
+
+static phy_status_t PHY_88Q211X_SetFifoSize(phy_handle_88q211x_t *dev) {
+
+    phy_status_t status = PHY_OK;
+    uint16_t     reg_data;
+
+    if (dev->config.interface == PHY_INTERFACE_RGMII) {
+
+        /* Set the 100BASE-T1 FIFO size */
+        {
+            /* Get the current FIFO size */
+            PHY_READ_REG(PHY_88Q211X_DEV_MAC_CTRL, PHY_88Q211X_REG_MAC_CTRL, &reg_data);
+            PHY_CHECK_RET;
+
+            /* If the new fifo size is different from the old one then change it */
+            if (((reg_data & PHY_88Q211X_CU_TX_FIFO_DEPTH_MASK) >> PHY_88Q211X_CU_TX_FIFO_DEPTH_SHIFT) != dev->config.fifo_size) {
+                reg_data &= ~PHY_88Q211X_CU_TX_FIFO_DEPTH_MASK;
+                reg_data |= ((uint16_t) dev->config.fifo_size << PHY_88Q211X_CU_TX_FIFO_DEPTH_SHIFT) & PHY_88Q211X_CU_TX_FIFO_DEPTH_MASK;
+
+                /* Write the data back */
+                PHY_WRITE_REG(PHY_88Q211X_DEV_MAC_CTRL, PHY_88Q211X_REG_MAC_CTRL, reg_data);
+                PHY_CHECK_RET;
+            }
+        }
+
+        /* Set the 1000BASE-T1 FIFO size (3.FD20.1:0) */
+        {
+            /* Get the current FIFO size */
+            PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_TX_FIFO_CTRL, PHY_88Q211X_REG_1000BASE_T1_TX_FIFO_CTRL, &reg_data);
+            PHY_CHECK_RET;
+
+            /* If the new fifo size is different from the old one then change it */
+            if (((reg_data & PHY_88Q211X_FIBER_TX_FIFO_DEPTH_MASK) >> PHY_88Q211X_FIBER_TX_FIFO_DEPTH_SHIFT) != dev->config.fifo_size) {
+                reg_data &= ~PHY_88Q211X_FIBER_TX_FIFO_DEPTH_MASK;
+                reg_data |= ((uint16_t) dev->config.fifo_size << PHY_88Q211X_FIBER_TX_FIFO_DEPTH_SHIFT) & PHY_88Q211X_FIBER_TX_FIFO_DEPTH_MASK;
+
+                /* Write the data back */
+                PHY_WRITE_REG(PHY_88Q211X_DEV_MAC_CTRL, PHY_88Q211X_REG_MAC_CTRL, reg_data);
+                PHY_CHECK_RET;
+            }
+        }
+    }
+
+    /* TODO: Set the SGMII FIFO size (4.8010.15:14) */
+    else if (dev->config.interface == PHY_INTERFACE_SGMII) {
+        status = PHY_NOT_IMPLEMENTED_ERROR;
+        PHY_CHECK_RET;
+    }
+
+    /* Invalid interface */
+    else {
+        status = PHY_PARAMETER_ERROR;
         PHY_CHECK_RET;
     }
 
@@ -131,7 +193,7 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     PHY_CHECK_RET;
 
     /* Check config parameters. TODO: More */
-    if ((config->variant == PHY_VARIANT_88Q2111) && (config->interface == PHY_INTERFACE_SGMII)) status = PHY_PARAMETER_ERROR;
+    if ((config->variant == PHY_VARIANT_88Q2110) && (config->interface == PHY_INTERFACE_SGMII)) status = PHY_PARAMETER_ERROR;
     PHY_CHECK_END;
 
     /* Check the callbacks */
@@ -183,8 +245,13 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
         PHY_CHECK_END;
     }
 
-    /* TODO: Set the fifo size */
+    /* Set the fifo size */
+    status = PHY_88Q211X_SetFifoSize(dev);
+    PHY_CHECK_END;
 
+    /* Reset GMII steering (disable loopback, enable packet checker, disable packet generator) */
+    status = PHY_88Q211X_ResetGMIISteering(dev);
+    PHY_CHECK_RET;
 
     /* Move from unconfigured to IDLE */
     dev->state = PHY_STATE_88Q211X_IDLE;

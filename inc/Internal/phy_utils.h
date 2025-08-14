@@ -63,11 +63,13 @@ extern "C" {
 #define PHY_WRITE_REG(mmd_addr, reg_addr, data)                                                                                                  \
     do {                                                                                                                                         \
         status = dev->callbacks->callback_write_reg(dev->config.phy_addr, mmd_addr, reg_addr, data, dev->config.timeout, dev->callback_context); \
+        if (status == PHY_OK) dev->events.writes++;                                                                                              \
     } while (0)
 
 #define PHY_READ_REG(mmd_addr, reg_addr, data)                                                                                                  \
     do {                                                                                                                                        \
         status = dev->callbacks->callback_read_reg(dev->config.phy_addr, mmd_addr, reg_addr, data, dev->config.timeout, dev->callback_context); \
+        if (status == PHY_OK) dev->events.reads++;                                                                                              \
     } while (0)
 
 

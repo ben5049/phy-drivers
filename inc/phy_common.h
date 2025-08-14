@@ -31,7 +31,7 @@ typedef enum {
 } phy_status_t;
 
 typedef enum {
-    PHY_VARIANT_88Q2111,
+    PHY_VARIANT_88Q2110,
     PHY_VARIANT_88Q2112,
     PHY_VARIANT_LAN8670,
     PHY_VARIANT_LAN8671,

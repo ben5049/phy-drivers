@@ -34,6 +34,7 @@ typedef enum {
     PHY_CABLE_STATE_88Q211X_TERMINATED,
     PHY_CABLE_STATE_88Q211X_SHORT,
     PHY_CABLE_STATE_88Q211X_OPEN,
+    PHY_CABLE_STATE_88Q211X_ERROR,
 } phy_cable_state_88q211x_t;
 
 typedef enum {
@@ -45,6 +46,9 @@ typedef enum {
 
 /* Stores information about driver events */
 typedef struct {
+    atomic_int_fast32_t writes;
+    atomic_int_fast32_t reads;
+    atomic_int_fast32_t crc_errors;
 } phy_event_counters_88q211x_t;
 
 typedef struct {
@@ -61,7 +65,6 @@ typedef struct {
     phy_fifo_size_88q211x_t fifo_size;
 
 } phy_config_88q211x_t;
-PHY_CHECK_CONFIG_MEMBERS(phy_config_88q211x_t);
 
 typedef struct {
 
@@ -79,7 +82,6 @@ typedef struct {
     phy_state_88q211x_t          state;
 
 } phy_handle_88q211x_t;
-PHY_CHECK_HANDLE_MEMBERS(phy_handle_88q211x_t);
 
 
 phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211x_t *config, const phy_callbacks_t *callbacks, void *callback_context);
@@ -110,7 +112,7 @@ phy_status_t PHY_88Q211X_DisableAutoPolarityCorrection(phy_handle_88q211x_t *dev
 phy_status_t PHY_88Q211X_GetPolarity(phy_handle_88q211x_t *dev, bool *normal);
 
 phy_status_t PHY_88Q211X_StartVCT(phy_handle_88q211x_t *dev);
-phy_status_t PHY_88Q211X_GetVCTResults(phy_handle_88q211x_t *dev, phy_cable_state_88q211x_t *cable_state, uint16_t *maximum_peak_distance);
+phy_status_t PHY_88Q211X_GetVCTResults(phy_handle_88q211x_t *dev, phy_cable_state_88q211x_t *cable_state, uint32_t *maximum_peak_distance);
 
 phy_status_t PHY_88Q211X_Start100MBIST(phy_handle_88q211x_t *dev);
 phy_status_t PHY_88Q211X_Stop100MBIST(phy_handle_88q211x_t *dev);
@@ -121,12 +123,16 @@ phy_status_t PHY_88Q211X_Stop1000MBIST(phy_handle_88q211x_t *dev);
 phy_status_t PHY_88Q211X_Get1000MBISTResults(phy_handle_88q211x_t *dev, bool *error);
 
 phy_status_t PHY_88Q211X_RunRGMIIImpedanceCalibration(phy_handle_88q211x_t *dev);
+
+phy_status_t PHY_88Q211X_EnableTemperatureSensor(phy_handle_88q211x_t *dev);
 phy_status_t PHY_88Q211X_ReadTemperature(phy_handle_88q211x_t *dev, int16_t *temp);
 
 phy_status_t PHY_88Q211X_EnableIEEEPowerDown(phy_handle_88q211x_t *dev);
 phy_status_t PHY_88Q211X_DisableIEEEPowerDown(phy_handle_88q211x_t *dev);
+phy_status_t PHY_88Q211X_EnableLPSDPowerDown(phy_handle_88q211x_t *dev);
+phy_status_t PHY_88Q211X_DisableLPSDPowerDown(phy_handle_88q211x_t *dev);
 
-/* TODO: PTP functions*/
+/* TODO: PTP functions */
 
 
 #ifdef __cplusplus

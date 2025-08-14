@@ -17,7 +17,7 @@ phy_status_t PHY_Init(void *dev, void *config, phy_callbacks_t *callbacks, void 
 
     switch (((phy_config_base_t *) config)->variant) {
 
-        case (PHY_VARIANT_88Q2111):
+        case (PHY_VARIANT_88Q2110):
         case (PHY_VARIANT_88Q2112):
             status = PHY_88Q211X_Init(dev, config, callbacks, callback_context);
             break;
