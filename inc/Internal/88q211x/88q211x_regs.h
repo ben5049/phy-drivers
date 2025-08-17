@@ -154,10 +154,12 @@ enum phy_88q211x_ctrl_dev_e {
 /* ---------------------------------------------------------------------------- */
 /* IEEE PCS Registers (Device 3) */
 /* ---------------------------------------------------------------------------- */
-enum phy_88q211x_pma_pmd_reg_e {
+
+enum phy_88q211x_pcs_reg_e {
     PHY_88Q211X_REG_PCS_CTRL_1 = 0x0000,
 };
-enum phy_88q211x_pma_pmd_dev_e {
+
+enum phy_88q211x_pcs_dev_e {
     PHY_88Q211X_DEV_PCS_CTRL_1 = 0x03,
 };
 
