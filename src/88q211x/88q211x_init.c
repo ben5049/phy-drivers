@@ -190,13 +190,9 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     if (dev->state != PHY_STATE_88Q211X_UNCONFIGURED) status = PHY_ALREADY_CONFIGURED;
     PHY_CHECK_RET;
 
-    /* Take the mutex */
-    status = callbacks->callback_take_mutex(config->timeout, dev->callback_context);
-    PHY_CHECK_RET;
-
     /* Check config parameters. TODO: More */
     if ((config->variant == PHY_VARIANT_88Q2110) && (config->interface == PHY_INTERFACE_SGMII)) status = PHY_PARAMETER_ERROR;
-    PHY_CHECK_END;
+    PHY_CHECK_RET;
 
     /* Check the callbacks */
     if (callbacks->callback_read_reg == NULL) status = PHY_PARAMETER_ERROR;
@@ -206,11 +202,16 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     if (callbacks->callback_delay_ns == NULL) status = PHY_PARAMETER_ERROR;
     if (callbacks->callback_take_mutex == NULL) status = PHY_PARAMETER_ERROR;
     if (callbacks->callback_give_mutex == NULL) status = PHY_PARAMETER_ERROR;
-    PHY_CHECK_END;
+    PHY_CHECK_RET;
+
+    /* Take the mutex */
+    status = callbacks->callback_take_mutex(config->timeout, dev->callback_context);
+    PHY_CHECK_RET;
 
     /* Assign the inputs */
     dev->config    = *config;
     dev->callbacks = callbacks;
+
 
     /* Reset parameters */
     dev->speed            = PHY_SPEED_UNKNOWN;
