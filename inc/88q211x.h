@@ -21,16 +21,19 @@ extern "C" {
 #include "internal/phy_utils.h"
 
 
-#define PHY_88Q211X_OUI          0x005043
+#define PHY_88Q211X_OUI          0x100158
 #define PHY_88Q211X_MODEL_NUMBER 0x18
 
 
 typedef enum {
     PHY_STATE_88Q211X_UNCONFIGURED = 0,
     PHY_STATE_88Q211X_IDLE,
+    PHY_STATE_88Q211X_POWER_DOWN,
+    PHY_STATE_88Q211X_LINK_UP,
 } phy_state_88q211x_t;
 
 typedef enum {
+    PHY_CABLE_STATE_88Q211X_NOT_STARTED,
     PHY_CABLE_STATE_88Q211X_TERMINATED,
     PHY_CABLE_STATE_88Q211X_SHORT,
     PHY_CABLE_STATE_88Q211X_OPEN,
@@ -102,12 +105,12 @@ phy_status_t PHY_88Q211X_EnableAutoNegotiation(phy_handle_88q211x_t *dev);
 phy_status_t PHY_88Q211X_DisableAutoNegotiation(phy_handle_88q211x_t *dev);
 phy_status_t PHY_88Q211X_GetAutoNegotiationStatus(phy_handle_88q211x_t *dev);
 
-phy_status_t PHY_88Q211X_SetSpeed(phy_handle_88q211x_t *dev, phy_speed_t *speed);
+phy_status_t PHY_88Q211X_SetSpeed(phy_handle_88q211x_t *dev, phy_speed_t speed);
 phy_status_t PHY_88Q211X_GetSpeed(phy_handle_88q211x_t *dev, phy_speed_t *speed);
 
 phy_status_t PHY_88Q211X_GetDuplex(phy_handle_88q211x_t *dev, phy_duplex_t *duplex);
 
-phy_status_t PHY_88Q211X_SetRole(phy_handle_88q211x_t *dev, phy_role_t *role);
+phy_status_t PHY_88Q211X_SetRole(phy_handle_88q211x_t *dev, phy_role_t role);
 phy_status_t PHY_88Q211X_GetRole(phy_handle_88q211x_t *dev, phy_role_t *role);
 
 phy_status_t PHY_88Q211X_EnableAutoPolarityCorrection(phy_handle_88q211x_t *dev);

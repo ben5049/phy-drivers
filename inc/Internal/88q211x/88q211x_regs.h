@@ -156,12 +156,16 @@ enum phy_88q211x_ctrl_dev_e {
 /* ---------------------------------------------------------------------------- */
 
 enum phy_88q211x_pcs_reg_e {
-    PHY_88Q211X_REG_PCS_CTRL_1 = 0x0000,
+    PHY_88Q211X_REG_PCS_CTRL_1               = 0x0000,
+    PHY_88Q211X_REG_PCS_1000BASE_T1_STATUS_1 = 0x0901,
 };
 
 enum phy_88q211x_pcs_dev_e {
-    PHY_88Q211X_DEV_PCS_CTRL_1 = 0x03,
+    PHY_88Q211X_DEV_PCS_CTRL_1               = 0x03,
+    PHY_88Q211X_DEV_PCS_1000BASE_T1_STATUS_1 = 0x03,
 };
+
+#define PHY_88Q211X_1000BASE_T1_LINK_STATUS (1 << 2)
 
 /* ---------------------------------------------------------------------------- */
 /* IEEE Auto-Negotiation Registers */
@@ -247,6 +251,8 @@ enum phy_88q211x_100base_t1_pcs_dev_e {
     PHY_88Q211X_DEV_BIST_STATUS              = 0x03,
     PHY_88Q211X_DEV_BIST_COUNTERS            = 0x03,
 };
+
+#define PHY_88Q211X_100BASE_T1_LINK_STATUS (1 << 2)
 
 #define PHY_88Q211X_CU_TX_FIFO_DEPTH_SHIFT (14)
 #define PHY_88Q211X_CU_TX_FIFO_DEPTH_MASK  (0x3 << PHY_88Q211X_CU_TX_FIFO_DEPTH_SHIFT)

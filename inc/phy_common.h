@@ -28,6 +28,8 @@ typedef enum {
     PHY_PARAMETER_ERROR,
     PHY_NOT_IMPLEMENTED_ERROR,
     PHY_ID_ERROR,
+    PHY_MUTEX_ERROR,
+    PHY_INVALID_REGISTER_CONTENT_ERROR,
 } phy_status_t;
 
 typedef enum {
@@ -105,7 +107,7 @@ typedef struct {
 } phy_handle_base_t;
 
 
-phy_status_t PHY_Init(void *dev, void *config, phy_callbacks_t *callbacks, void *callback_context);
+phy_status_t PHY_Init(void *dev, void *config, const phy_callbacks_t *callbacks, void *callback_context);
 
 void PHY_GetDuplex(void *dev, phy_duplex_t *duplex);
 void PHY_GetSpeed(void *dev, phy_speed_t *speed);

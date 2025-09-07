@@ -21,8 +21,8 @@ static void PHY_88Q211X_ResetEventCounters(phy_handle_88q211x_t *dev) {
 
 static phy_status_t PHY_88Q211X_CheckID(phy_handle_88q211x_t *dev) {
 
-    phy_status_t status = PHY_OK;
-    uint16_t     reg_data;
+    phy_status_t status   = PHY_OK;
+    uint16_t     reg_data = 0;
     uint32_t     oui      = 0;
     uint8_t      model    = 0;
     uint8_t      revision = 0;
@@ -32,14 +32,14 @@ static phy_status_t PHY_88Q211X_CheckID(phy_handle_88q211x_t *dev) {
     PHY_CHECK_RET;
 
     /* Get bits 3:18 of the organisationally unique identifier */
-    oui |= (uint32_t) ((reg_data & PHY_88Q211X_OUI_3_18_MASK) >> PHY_88Q211X_OUI_3_18_SHIFT) << 6;
+    oui |= (uint32_t) ((reg_data & PHY_88Q211X_OUI_3_18_MASK) >> PHY_88Q211X_OUI_3_18_SHIFT) << 3;
 
     /* Read the second ID register */
     PHY_READ_REG(PHY_88Q211X_DEV_PMA_PMD_DEV_ID_2, PHY_88Q211X_REG_PMA_PMD_DEV_ID_2, &reg_data);
     PHY_CHECK_RET;
 
     /* Get bits 19:24 of the organisationally unique identifier and check it is correct */
-    oui |= (reg_data & PHY_88Q211X_OUI_19_24_MASK) >> PHY_88Q211X_OUI_19_24_SHIFT;
+    oui |= ((reg_data & PHY_88Q211X_OUI_19_24_MASK) >> PHY_88Q211X_OUI_19_24_SHIFT) << 19;
     if (oui != PHY_88Q211X_OUI) status = PHY_ID_ERROR;
     PHY_CHECK_RET;
 
@@ -58,8 +58,8 @@ static phy_status_t PHY_88Q211X_CheckID(phy_handle_88q211x_t *dev) {
 
 static phy_status_t PHY_88Q211X_SoftwareResetRGMII(phy_handle_88q211x_t *dev) {
 
-    phy_status_t status = PHY_OK;
-    uint16_t     reg_data;
+    phy_status_t status   = PHY_OK;
+    uint16_t     reg_data = 0;
 
     /* Read the reset and control register */
     PHY_READ_REG(PHY_88Q211X_DEV_RST_CTRL, PHY_88Q211X_REG_RST_CTRL, &reg_data);
@@ -85,8 +85,8 @@ static phy_status_t PHY_88Q211X_SoftwareResetRGMII(phy_handle_88q211x_t *dev) {
 
 static phy_status_t PHY_88Q211X_ConfigureRGMII(phy_handle_88q211x_t *dev) {
 
-    phy_status_t status = PHY_OK;
-    uint16_t     reg_data;
+    phy_status_t status     = PHY_OK;
+    uint16_t     reg_data   = 0;
     bool         write_back = false;
 
     /* Get the current RGMII settings */
@@ -121,8 +121,8 @@ static phy_status_t PHY_88Q211X_ConfigureRGMII(phy_handle_88q211x_t *dev) {
 
 static phy_status_t PHY_88Q211X_SetFifoSize(phy_handle_88q211x_t *dev) {
 
-    phy_status_t status = PHY_OK;
-    uint16_t     reg_data;
+    phy_status_t status   = PHY_OK;
+    uint16_t     reg_data = 0;
 
     if (dev->config.interface == PHY_INTERFACE_RGMII) {
 
@@ -182,8 +182,8 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     PHY_CHECK_HANDLE_MEMBERS(phy_handle_88q211x_t);
     PHY_CHECK_CONFIG_MEMBERS(phy_config_88q211x_t);
 
-    phy_status_t status = PHY_OK;
-    uint16_t     reg_data;
+    phy_status_t status   = PHY_OK;
+    uint16_t     reg_data = 0;
 
 
     /* Check the device hasn't already been initialised. Note this may cause an unintended error if the struct uses non-zeroed memory. */
