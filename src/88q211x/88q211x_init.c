@@ -202,6 +202,7 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     if (callbacks->callback_delay_ns == NULL) status = PHY_PARAMETER_ERROR;
     if (callbacks->callback_take_mutex == NULL) status = PHY_PARAMETER_ERROR;
     if (callbacks->callback_give_mutex == NULL) status = PHY_PARAMETER_ERROR;
+    if (callbacks->callback_link_status_change == NULL) status = PHY_PARAMETER_ERROR;
     PHY_CHECK_RET;
 
     /* Take the mutex */
@@ -218,6 +219,7 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     dev->role             = PHY_ROLE_UNKNOWN;
     dev->autoneg          = false;
     dev->duplex           = PHY_FULL_DUPLEX;
+    dev->linkup           = false;
     dev->callback_context = callback_context;
     PHY_88Q211X_ResetEventCounters(dev);
 

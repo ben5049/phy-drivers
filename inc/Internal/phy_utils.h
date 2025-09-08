@@ -47,6 +47,7 @@ extern "C" {
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, duplex);           \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, autoneg);          \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, role);             \
+    PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, linkup);           \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, callbacks);        \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, callback_context);
 

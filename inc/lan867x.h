@@ -32,10 +32,10 @@ typedef struct {
     phy_duplex_t           duplex;
     bool                   autoneg;
     phy_role_t             role;
+    bool                   linkup;
     const phy_callbacks_t *callbacks;
     void                  *callback_context;
-
-    phy_config_lan867x_t *config;
+    phy_config_lan867x_t  *config;
 } phy_handle_lan867x_t;
 
 

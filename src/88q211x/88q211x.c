@@ -10,16 +10,134 @@
 #include "internal/88q211x/88q211x_regs.h"
 
 
-phy_status_t PHY_88Q211X_GetLinkState(phy_handle_88q211x_t *dev, bool *linkup) {
+phy_status_t PHY_88Q211X_EnableInterrupts(phy_handle_88q211x_t *dev) {
 
     phy_status_t status   = PHY_OK;
     uint16_t     reg_data = 0;
 
     PHY_LOCK;
 
+    /* Read the interrupt pin config register */
+    PHY_READ_REG(PHY_88Q211X_DEV_LED_TIMER_CTRL, PHY_88Q211X_REG_LED_TIMER_CTRL, &reg_data);
+    PHY_CHECK_END;
+
+    /* Make sure the interrupt polarity is low and not forced on */
+    if (!(reg_data & PHY_88Q211X_INT_POLARITY_LOW) || (reg_data & PHY_88Q211X_FORCE_INT)) {
+        reg_data |= PHY_88Q211X_INT_POLARITY_LOW;
+        reg_data &= ~PHY_88Q211X_FORCE_INT;
+        PHY_WRITE_REG(PHY_88Q211X_DEV_LED_TIMER_CTRL, PHY_88Q211X_REG_LED_TIMER_CTRL, reg_data);
+        PHY_CHECK_END;
+    }
+
+    /* Read the GPIO tri-state register */
+    PHY_READ_REG(PHY_88Q211X_DEV_GPIO_TRI_STATE_CTRL, PHY_88Q211X_REG_GPIO_TRI_STATE_CTRL, &reg_data);
+    PHY_CHECK_END;
+
+    /* Disable tri-state mode on the interrupt pin and configure as open drain */
+    if (!(reg_data & PHY_88Q211X_INT_DISABLE_TRI_STATE) ||
+        (reg_data & PHY_88Q211X_INT_OPEN_SOURCE) ||
+        !(reg_data & PHY_88Q211X_INT_OPEN_DRAIN)) {
+
+        reg_data |= PHY_88Q211X_INT_DISABLE_TRI_STATE;
+        reg_data &= ~PHY_88Q211X_INT_OPEN_SOURCE;
+        reg_data |= PHY_88Q211X_INT_OPEN_DRAIN;
+
+        PHY_WRITE_REG(PHY_88Q211X_DEV_GPIO_TRI_STATE_CTRL, PHY_88Q211X_REG_GPIO_TRI_STATE_CTRL, reg_data);
+        PHY_CHECK_END;
+    }
+
+    /* Configure which general interrupts are enabled */
+    reg_data  = 0;
+    reg_data |= PHY_88Q211X_INT_PMT_LINK_UP;
+    reg_data |= PHY_88Q211X_INT_PMT_LINK_DOWN;
+    reg_data |= PHY_88Q211X_INT_100BASE_T1;
+    PHY_WRITE_REG(PHY_88Q211X_DEV_INT_EN_1, PHY_88Q211X_REG_INT_EN_1, reg_data);
+    PHY_CHECK_END;
+
+    /* Configure 100BASE-T1 specific interrupts. TODO: Enable error interrupts */
+    // reg_data  = 0;
+    // reg_data |= PHY_88Q211X_100BASE_T1_LINK_STATUS_CHANGE;
+    // PHY_WRITE_REG(PHY_88Q211X_DEV_100BASE_T1_INT_EN_1, PHY_88Q211X_REG_100BASE_T1_INT_EN_1, reg_data);
+    // PHY_CHECK_END;
+
+    /* Configure 100BASE-T1 MAC specific interrupts. TODO: Enable error interrupts */
+    // reg_data = 0;
+    // PHY_WRITE_REG(PHY_88Q211X_DEV_MAC_INT_EN, PHY_88Q211X_REG_MAC_INT_EN, reg_data);
+    // PHY_CHECK_END;
+
+    /* TODO: Configure SGMII specific interrupts. TODO: Enable error interrupts */
+
+end:
+    PHY_UNLOCK;
+    return status;
+}
+
+
+phy_status_t PHY_88Q211X_DisableInterrupts(phy_handle_88q211x_t *dev) {
+
+    phy_status_t status = PHY_NOT_IMPLEMENTED_ERROR;
+
+    PHY_LOCK;
+
+    PHY_UNLOCK;
+    return status;
+}
+
+
+phy_status_t PHY_88Q211X_ProcessInterrupt(phy_handle_88q211x_t *dev) {
+
+    phy_status_t status   = PHY_OK;
+    uint16_t     reg_data = 0;
+
+    PHY_LOCK;
+
+    /* Get the interrupt status bits */
+    PHY_READ_REG(PHY_88Q211X_DEV_GPIO_INT_STATUS, PHY_88Q211X_REG_GPIO_INT_STATUS, &reg_data);
+    PHY_CHECK_END;
+
+    /* Get the link up or down status */
+    if ((reg_data & PHY_88Q211X_INT_PMT_LINK_UP) && !(reg_data & PHY_88Q211X_INT_PMT_LINK_DOWN)) {
+        dev->linkup = true;
+        status      = dev->callbacks->callback_link_status_change(true, dev->callback_context);
+        PHY_CHECK_END;
+    } else if (!(reg_data & PHY_88Q211X_INT_PMT_LINK_UP) && (reg_data & PHY_88Q211X_INT_PMT_LINK_DOWN)) {
+        dev->linkup = false;
+        status      = dev->callbacks->callback_link_status_change(false, dev->callback_context);
+        PHY_CHECK_END;
+    }
+
+    /* If the link is both up and down then read the status registers to check which is true */
+    else if ((reg_data & PHY_88Q211X_INT_PMT_LINK_UP) && (reg_data & PHY_88Q211X_INT_PMT_LINK_DOWN)) {
+        status = PHY_88Q211X_GetLinkState(dev, NULL);
+        PHY_CHECK_END;
+        status = dev->callbacks->callback_link_status_change(dev->linkup, dev->callback_context);
+        PHY_CHECK_END;
+    }
+
+    /* Unknown interrupt */
+    else {
+        status = PHY_UNKNOWN_INTERRUPT_ERROR;
+        PHY_CHECK_END;
+    }
+
+end:
+    PHY_UNLOCK;
+    return status;
+}
+
+
+phy_status_t PHY_88Q211X_GetLinkState(phy_handle_88q211x_t *dev, bool *linkup) {
+
+    phy_status_t status          = PHY_OK;
+    uint16_t     reg_data        = 0;
+    bool         linkup_internal = false;
+
+    PHY_LOCK;
+
     /* Powered down PHY can't have a link up */
     if (dev->state == PHY_STATE_88Q211X_POWER_DOWN) {
-        *linkup = false;
+        if (linkup != NULL) *linkup = false;
+        dev->linkup = false;
         goto end;
     }
 
@@ -31,7 +149,7 @@ phy_status_t PHY_88Q211X_GetLinkState(phy_handle_88q211x_t *dev, bool *linkup) {
         PHY_CHECK_END;
 
         /* Extract the link status bit */
-        *linkup = (bool) (reg_data & PHY_88Q211X_100BASE_T1_LINK_STATUS);
+        linkup_internal = (bool) (reg_data & PHY_88Q211X_100BASE_T1_LINK_STATUS);
 
     } else if (dev->speed == PHY_SPEED_1G) {
 
@@ -40,19 +158,30 @@ phy_status_t PHY_88Q211X_GetLinkState(phy_handle_88q211x_t *dev, bool *linkup) {
         PHY_CHECK_END;
 
         /* Extract the link status bit */
-        *linkup = (bool) (reg_data & PHY_88Q211X_100BASE_T1_LINK_STATUS);
+        linkup_internal = (bool) (reg_data & PHY_88Q211X_100BASE_T1_LINK_STATUS);
 
     } else {
         status = PHY_PARAMETER_ERROR;
         goto end;
     }
 
-    /* Update the device struct */
-    if (*linkup) {
-        dev->state = PHY_STATE_88Q211X_LINK_UP;
-    } else {
-        dev->state = PHY_STATE_88Q211X_IDLE;
+    /* If there is a change then call the corresponding callback */
+    if (dev->linkup != linkup_internal) {
+        status = dev->callbacks->callback_link_status_change(linkup_internal, dev->callback_context);
+        PHY_CHECK_END;
     }
+
+    /* Update the device struct */
+    if (linkup_internal) {
+        dev->state  = PHY_STATE_88Q211X_LINK_UP;
+        dev->linkup = true;
+    } else {
+        dev->state  = PHY_STATE_88Q211X_IDLE;
+        dev->linkup = false;
+    }
+
+    /* Update the output */
+    if (linkup != NULL) *linkup = dev->linkup;
 
 end:
     PHY_UNLOCK;
@@ -329,7 +458,8 @@ phy_status_t PHY_88Q211X_EnableIEEEPowerDown(phy_handle_88q211x_t *dev) {
     }
 
     /* Update the device struct */
-    dev->state = PHY_STATE_88Q211X_POWER_DOWN;
+    dev->state  = PHY_STATE_88Q211X_POWER_DOWN;
+    dev->linkup = false;
 
 end:
     PHY_UNLOCK;

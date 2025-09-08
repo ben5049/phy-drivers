@@ -19,6 +19,9 @@ extern "C" {
 #include "hal.h"
 
 
+#define PHY_GET_SPEED_MBPS(phy_handle) (((phy_handle).speed == PHY_SPEED_10M) ? 10 : (((phy_handle).speed == PHY_SPEED_100M) ? 100 : (((phy_handle).speed == PHY_SPEED_1G) ? 1000 : 0)))
+
+
 typedef enum {
     PHY_OK      = 0,
     PHY_ERROR   = 1,
@@ -30,6 +33,7 @@ typedef enum {
     PHY_ID_ERROR,
     PHY_MUTEX_ERROR,
     PHY_INVALID_REGISTER_CONTENT_ERROR,
+    PHY_UNKNOWN_INTERRUPT_ERROR,
 } phy_status_t;
 
 typedef enum {
@@ -79,15 +83,17 @@ typedef void (*phy_callback_delay_ms_t)(uint32_t ms, void *context);
 typedef void (*phy_callback_delay_ns_t)(uint32_t ns, void *context);
 typedef phy_status_t (*phy_callback_take_mutex_t)(uint32_t timeout, void *context);
 typedef phy_status_t (*phy_callback_give_mutex_t)(void *context);
+typedef phy_status_t (*phy_callback_link_status_change_t)(bool linkup, void *context);
 
 typedef struct {
-    phy_callback_read_reg_t    callback_read_reg;    /* Read from a register */
-    phy_callback_write_reg_t   callback_write_reg;   /* Write to a register */
-    phy_callback_get_time_ms_t callback_get_time_ms; /* Get time in ms */
-    phy_callback_delay_ms_t    callback_delay_ms;    /* Non-blocking delay in ms */
-    phy_callback_delay_ns_t    callback_delay_ns;    /* Blocking delay in ns */
-    phy_callback_take_mutex_t  callback_take_mutex;  /* Take the mutex protecting the device */
-    phy_callback_give_mutex_t  callback_give_mutex;  /* Give the mutex protecting the device */
+    phy_callback_read_reg_t           callback_read_reg;           /* Read from a register */
+    phy_callback_write_reg_t          callback_write_reg;          /* Write to a register */
+    phy_callback_get_time_ms_t        callback_get_time_ms;        /* Get time in ms */
+    phy_callback_delay_ms_t           callback_delay_ms;           /* Non-blocking delay in ms */
+    phy_callback_delay_ns_t           callback_delay_ns;           /* Blocking delay in ns */
+    phy_callback_take_mutex_t         callback_take_mutex;         /* Take the mutex protecting the device */
+    phy_callback_give_mutex_t         callback_give_mutex;         /* Give the mutex protecting the device */
+    phy_callback_link_status_change_t callback_link_status_change; /* Called when the process interrupt function detects a link status change */
 } phy_callbacks_t;
 
 typedef struct {
@@ -102,6 +108,7 @@ typedef struct {
     phy_duplex_t           duplex;
     bool                   autoneg;
     phy_role_t             role;
+    bool                   linkup;
     const phy_callbacks_t *callbacks;
     void                  *callback_context;
 } phy_handle_base_t;

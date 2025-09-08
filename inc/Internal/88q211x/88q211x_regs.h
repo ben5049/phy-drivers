@@ -131,6 +131,19 @@ enum phy_88q211x_ctrl_dev_e {
 
 #define PHY_88Q211X_RST_RGMII                      (1 << 15)
 
+#define PHY_88Q211X_INT_GPIO0                      (1 << 0)
+#define PHY_88Q211X_INT_LED0                       (1 << 1)
+#define PHY_88Q211X_INT_LED1                       (1 << 2)
+#define PHY_88Q211X_INT_NT                         (1 << 4)
+#define PHY_88Q211X_INT_SGMII                      (1 << 5)
+#define PHY_88Q211X_INT_PMT_LINK_UP                (1 << 6)
+#define PHY_88Q211X_INT_PMT_LINK_DOWN              (1 << 7)
+#define PHY_88Q211X_INT_TEMPERATURE_SENSOR         (1 << 11)
+#define PHY_88Q211X_INT_100BASE_T1                 (1 << 12)
+#define PHY_88Q211X_INT_100BASE_T1_NEG_EDGE        (1 << 13)
+#define PHY_88Q211X_INT_PTP                        (1 << 14)
+#define PHY_88Q211X_INT_PTP_NEG_LEVEL              (1 << 15)
+
 #define PHY_88Q211X_TEMPERATURE_SENSOR_EN_SHIFT    (14)
 #define PHY_88Q211X_TEMPERATURE_SENSOR_EN_MASK     (0x3 << PHY_88Q211X_TEMPERATURE_SENSOR_EN_SHIFT)
 #define PHY_88Q211X_TEMPERATURE_SENSOR_1HZ         (0x0)
@@ -218,7 +231,7 @@ enum phy_88q211x_100base_t1_pcs_dev_e {
     PHY_88Q211X_DEV_100BASE_T1_CU_CTRL       = 0x03,
     PHY_88Q211X_DEV_100BASE_T1_STATUS_1      = 0x03,
     PHY_88Q211X_DEV_100BASE_T1_STATUS_2      = 0x03,
-    PHY_88Q211X_DEV_100BASE_T1_INT_EN        = 0x03,
+    PHY_88Q211X_DEV_100BASE_T1_INT_EN_1      = 0x03,
     PHY_88Q211X_DEV_100BASE_T1_CU_INT_STATUS = 0x03,
     PHY_88Q211X_DEV_100BASE_T1_INT_STATUS_1  = 0x03,
     PHY_88Q211X_DEV_LINK_DROP_COUNTER        = 0x03,
@@ -252,10 +265,12 @@ enum phy_88q211x_100base_t1_pcs_dev_e {
     PHY_88Q211X_DEV_BIST_COUNTERS            = 0x03,
 };
 
-#define PHY_88Q211X_100BASE_T1_LINK_STATUS (1 << 2)
+#define PHY_88Q211X_100BASE_T1_LINK_STATUS_CHANGE (1 << 10)
 
-#define PHY_88Q211X_CU_TX_FIFO_DEPTH_SHIFT (14)
-#define PHY_88Q211X_CU_TX_FIFO_DEPTH_MASK  (0x3 << PHY_88Q211X_CU_TX_FIFO_DEPTH_SHIFT)
+#define PHY_88Q211X_100BASE_T1_LINK_STATUS        (1 << 2)
+
+#define PHY_88Q211X_CU_TX_FIFO_DEPTH_SHIFT        (14)
+#define PHY_88Q211X_CU_TX_FIFO_DEPTH_MASK         (0x3 << PHY_88Q211X_CU_TX_FIFO_DEPTH_SHIFT)
 
 /* ---------------------------------------------------------------------------- */
 /* 3.6 1000BASE-T1 Copper Unit Advance PCS Registers */
@@ -294,6 +309,13 @@ enum phy_88q211x_1000base_t1_pcs_dev_e {
     PHY_88Q211X_DEV_1000BASE_T1_TX_FIFO_CTRL            = 0x03,
 
 };
+
+#define PHY_88Q211X_INT_OPEN_DRAIN            (1 << 8)
+#define PHY_88Q211X_INT_OPEN_SOURCE           (1 << 9)
+#define PHY_88Q211X_INT_DISABLE_TRI_STATE     (1 << 11)
+
+#define PHY_88Q211X_INT_POLARITY_LOW          (1 << 11)
+#define PHY_88Q211X_FORCE_INT                 (1 << 15)
 
 #define PHY_88Q211X_GMII_STEERING_MUX_A_SHIFT (7)
 #define PHY_88Q211X_GMII_STEERING_MUX_A_MASK  (0x3 << PHY_88Q211X_GMII_STEERING_MUX_A_SHIFT)
