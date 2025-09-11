@@ -100,6 +100,8 @@ typedef struct {
     phy_variant_t   variant;
     uint8_t         phy_addr;
     phy_interface_t interface;
+    phy_speed_t     default_speed; /* The speed of the PHY immediately after initialisation */
+    phy_role_t      default_role;
     uint32_t        timeout;
 } phy_config_base_t;
 

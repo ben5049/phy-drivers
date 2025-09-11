@@ -107,13 +107,16 @@ static phy_status_t PHY_88Q211X_ConfigureRGMII(phy_handle_88q211x_t *dev) {
 
     /* Only write back if required */
     if (write_back) {
-        PHY_WRITE_REG(PHY_88Q211X_DEV_RGMII_COM_PORT, PHY_88Q211X_REG_RGMII_COM_PORT, reg_data);
+        PHY_READ_REG(PHY_88Q211X_DEV_RGMII_COM_PORT, PHY_88Q211X_REG_RGMII_COM_PORT, &reg_data);
         PHY_CHECK_RET;
-
         /* Reset for the change to take effect */
         status = PHY_88Q211X_SoftwareResetRGMII(dev);
         PHY_CHECK_RET;
     }
+
+    // TODO: remove, checking write was a success IT ISN'T
+    PHY_READ_REG(PHY_88Q211X_DEV_RGMII_COM_PORT, PHY_88Q211X_REG_RGMII_COM_PORT, &reg_data);
+    PHY_CHECK_RET;
 
     return status;
 }
@@ -185,13 +188,14 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     phy_status_t status   = PHY_OK;
     uint16_t     reg_data = 0;
 
-
     /* Check the device hasn't already been initialised. Note this may cause an unintended error if the struct uses non-zeroed memory. */
     if (dev->state != PHY_STATE_88Q211X_UNCONFIGURED) status = PHY_ALREADY_CONFIGURED;
     PHY_CHECK_RET;
 
     /* Check config parameters. TODO: More */
     if ((config->variant == PHY_VARIANT_88Q2110) && (config->interface == PHY_INTERFACE_SGMII)) status = PHY_PARAMETER_ERROR;
+    if (config->default_role >= PHY_ROLE_INVALID) status = PHY_PARAMETER_ERROR;
+    if ((config->default_speed != PHY_SPEED_100M) && (config->default_speed != PHY_SPEED_1G)) status = PHY_PARAMETER_ERROR;
     PHY_CHECK_RET;
 
     /* Check the callbacks */
@@ -212,7 +216,6 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     /* Assign the inputs */
     dev->config    = *config;
     dev->callbacks = callbacks;
-
 
     /* Reset parameters */
     dev->speed            = PHY_SPEED_UNKNOWN;
@@ -260,7 +263,19 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
 
     /* Reset GMII steering (disable loopback, enable packet checker, disable packet generator) */
     status = PHY_88Q211X_ResetGMIISteering(dev);
-    PHY_CHECK_RET;
+    PHY_CHECK_END;
+
+    /* Set the port role */
+    if ((dev->role != dev->config.default_role) && (dev->config.default_role != PHY_ROLE_UNKNOWN)) {
+        status = PHY_88Q211X_SetRole(dev, dev->config.default_role);
+        PHY_CHECK_END;
+    }
+
+    /* Set the port speed */
+    if ((dev->speed != dev->config.default_speed) && (dev->config.default_speed != PHY_SPEED_UNKNOWN)) {
+        status = PHY_88Q211X_SetSpeed(dev, dev->config.default_speed);
+        PHY_CHECK_END;
+    }
 
     /* Move from unconfigured to IDLE */
     dev->state = PHY_STATE_88Q211X_IDLE;

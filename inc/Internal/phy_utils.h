@@ -52,10 +52,12 @@ extern "C" {
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, callback_context);
 
 
-#define PHY_CHECK_CONFIG_MEMBERS(phy_config_type)                                  \
-    PHY_CHECK_MEMBER_COMPATIBILITY(phy_config_type, phy_config_base_t, variant);   \
-    PHY_CHECK_MEMBER_COMPATIBILITY(phy_config_type, phy_config_base_t, phy_addr);  \
-    PHY_CHECK_MEMBER_COMPATIBILITY(phy_config_type, phy_config_base_t, interface); \
+#define PHY_CHECK_CONFIG_MEMBERS(phy_config_type)                                      \
+    PHY_CHECK_MEMBER_COMPATIBILITY(phy_config_type, phy_config_base_t, variant);       \
+    PHY_CHECK_MEMBER_COMPATIBILITY(phy_config_type, phy_config_base_t, phy_addr);      \
+    PHY_CHECK_MEMBER_COMPATIBILITY(phy_config_type, phy_config_base_t, interface);     \
+    PHY_CHECK_MEMBER_COMPATIBILITY(phy_config_type, phy_config_base_t, default_speed); \
+    PHY_CHECK_MEMBER_COMPATIBILITY(phy_config_type, phy_config_base_t, default_role); \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_config_type, phy_config_base_t, timeout);
 
 
