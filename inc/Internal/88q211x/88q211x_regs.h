@@ -170,15 +170,28 @@ enum phy_88q211x_ctrl_dev_e {
 
 enum phy_88q211x_pcs_reg_e {
     PHY_88Q211X_REG_PCS_CTRL_1               = 0x0000,
+    PHY_88Q211X_REG_PCS_STATUS_2             = 0x0008,
+    PHY_88Q211X_REG_1000BASE_T_PCS_STATUS_2  = 0x0021,
     PHY_88Q211X_REG_PCS_1000BASE_T1_STATUS_1 = 0x0901,
+    PHY_88Q211X_REG_PCS_1000BASE_T1_STATUS_2 = 0x0902,
 };
 
 enum phy_88q211x_pcs_dev_e {
     PHY_88Q211X_DEV_PCS_CTRL_1               = 0x03,
+    PHY_88Q211X_DEV_PCS_STATUS_2             = 0x03,
+    PHY_88Q211X_DEV_1000BASE_T_PCS_STATUS_2  = 0x03,
     PHY_88Q211X_DEV_PCS_1000BASE_T1_STATUS_1 = 0x03,
+    PHY_88Q211X_DEV_PCS_1000BASE_T1_STATUS_2 = 0x03,
 };
 
-#define PHY_88Q211X_1000BASE_T1_LINK_STATUS (1 << 2)
+#define PHY_88Q211X_PCS_RX_FAULT                (1 << 10)
+#define PHY_88Q211X_PCS_TX_FAULT                (1 << 11)
+
+#define PHY_88Q211X_HIGH_BER                    (1 << 14)
+#define PHY_88Q211X_ERRORED_BLOCKS_COUNTER_MASK (0xff)
+
+#define PHY_88Q211X_1000BASE_T1_LINK_STATUS     (1 << 2)
+#define PHY_88Q211X_1000BASE_T1_FAULT           (1 << 7)
 
 /* ---------------------------------------------------------------------------- */
 /* IEEE Auto-Negotiation Registers */
@@ -265,6 +278,8 @@ enum phy_88q211x_100base_t1_pcs_dev_e {
     PHY_88Q211X_DEV_BIST_COUNTERS            = 0x03,
 };
 
+#define PHY_88Q211X_100BASE_T1_POL_CORRECTION     (1 << 9)
+
 #define PHY_88Q211X_100BASE_T1_LINK_STATUS_CHANGE (1 << 10)
 
 #define PHY_88Q211X_100BASE_T1_LINK_STATUS        (1 << 2)
@@ -327,6 +342,7 @@ enum phy_88q211x_1000base_t1_pcs_dev_e {
 #define PHY_88Q211X_FIBER_TX_FIFO_DEPTH_MASK  (0x3 << PHY_88Q211X_FIBER_TX_FIFO_DEPTH_SHIFT)
 
 #define PHY_88Q211X_PACKET_GEN_EN             (1 << 3)
+#define PHY_88Q211X_PACKET_GEN_TRANSMIT       (1 << 7)
 
 #define PHY_88Q211X_PACKET_CHECK_COUNTER_RST  (1 << 3)
 #define PHY_88Q211X_PACKET_CHECK_EN           (1 << 2)

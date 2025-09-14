@@ -35,7 +35,17 @@ typedef enum {
     PHY_MUTEX_ERROR,
     PHY_INVALID_REGISTER_CONTENT_ERROR,
     PHY_UNKNOWN_INTERRUPT_ERROR,
+    PHY_FAULT_DETECTED,
 } phy_status_t;
+
+typedef enum {
+    PHY_FAULT_NONE,
+    PHY_FAULT_PMA,
+    PHY_FAULT_PCS,
+    PHY_FAULT_PCS_RX,
+    PHY_FAULT_PCS_TX,
+    PHY_FAULT_HIGH_BER, /* High bit error rate (for PHYs with FEC like 1000BASE-T1) */
+} phy_fault_t;
 
 typedef enum {
     PHY_VARIANT_88Q2110,

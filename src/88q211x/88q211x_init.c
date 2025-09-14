@@ -16,6 +16,8 @@ static void PHY_88Q211X_ResetEventCounters(phy_handle_88q211x_t *dev) {
     dev->events.writes     = 0;
     dev->events.reads      = 0;
     dev->events.crc_errors = 0;
+    dev->events.rx_faults  = 0;
+    dev->events.tx_faults  = 0;
 }
 
 
@@ -276,6 +278,14 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
         status = PHY_88Q211X_SetSpeed(dev, dev->config.default_speed);
         PHY_CHECK_END;
     }
+
+    /* Enable polarity correction (for 100BASE-T1) */
+    PHY_READ_REG(PHY_88Q211X_DEV_100BASE_T1_CU_CTRL, PHY_88Q211X_REG_100BASE_T1_CU_CTRL, &reg_data);
+    PHY_CHECK_END;
+    reg_data |= PHY_88Q211X_100BASE_T1_POL_CORRECTION;
+    PHY_WRITE_REG(PHY_88Q211X_DEV_100BASE_T1_CU_CTRL, PHY_88Q211X_REG_100BASE_T1_CU_CTRL, reg_data);
+    PHY_CHECK_END;
+
 
     /* Move from unconfigured to IDLE */
     dev->state = PHY_STATE_88Q211X_IDLE;

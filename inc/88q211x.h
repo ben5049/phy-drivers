@@ -52,6 +52,8 @@ typedef struct {
     atomic_int_fast32_t writes;
     atomic_int_fast32_t reads;
     atomic_int_fast32_t crc_errors;
+    atomic_int_fast32_t tx_faults;
+    atomic_int_fast32_t rx_faults;
 } phy_event_counters_88q211x_t;
 
 typedef struct {
@@ -122,6 +124,8 @@ phy_status_t PHY_88Q211X_GetPolarity(phy_handle_88q211x_t *dev, bool *normal);
 
 phy_status_t PHY_88Q211X_StartVCT(phy_handle_88q211x_t *dev);
 phy_status_t PHY_88Q211X_GetVCTResults(phy_handle_88q211x_t *dev, phy_cable_state_88q211x_t *cable_state, uint32_t *maximum_peak_distance);
+
+phy_status_t PHY_88Q211X_CheckFaults(phy_handle_88q211x_t *dev, phy_fault_t *fault);
 
 phy_status_t PHY_88Q211X_Start100MBIST(phy_handle_88q211x_t *dev);
 phy_status_t PHY_88Q211X_Stop100MBIST(phy_handle_88q211x_t *dev);

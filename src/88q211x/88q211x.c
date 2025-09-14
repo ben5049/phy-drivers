@@ -8,6 +8,7 @@
 #include "88q211x.h"
 #include "internal/phy_utils.h"
 #include "internal/88q211x/88q211x_regs.h"
+#include "internal/88q211x/88q211x_bist.h"
 
 
 phy_status_t PHY_88Q211X_EnableInterrupts(phy_handle_88q211x_t *dev) {
@@ -431,6 +432,87 @@ phy_status_t PHY_88Q211X_ReadTemperature(phy_handle_88q211x_t *dev, int16_t *tem
 
     /* Convert the temperature to degrees */
     *temp = ((int16_t) ((reg_data & PHY_88Q211X_TEMPERATURE_MASK) >> PHY_88Q211X_TEMPERATURE_SHIFT)) - 75;
+
+end:
+
+    PHY_UNLOCK;
+    return status;
+}
+
+
+phy_status_t PHY_88Q211X_CheckFaults(phy_handle_88q211x_t *dev, phy_fault_t *fault) {
+
+    phy_status_t status         = PHY_OK;
+    phy_fault_t  fault_internal = PHY_FAULT_NONE;
+    uint16_t     reg_data       = 0;
+    uint8_t      errors;
+
+    PHY_LOCK;
+
+    /* PCS Fault check */
+    {
+
+        /* Read the PCS status register */
+        PHY_READ_REG(PHY_88Q211X_DEV_PCS_STATUS_2, PHY_88Q211X_REG_PCS_STATUS_2, &reg_data);
+        PHY_CHECK_END;
+
+        /* Check for PCS RX faults */
+        if (reg_data & PHY_88Q211X_PCS_RX_FAULT) {
+            fault_internal = PHY_FAULT_PCS_RX;
+            dev->events.rx_faults++;
+        }
+
+        /* Check for PCS TX faults */
+        if (reg_data & PHY_88Q211X_PCS_TX_FAULT) {
+            fault_internal = PHY_FAULT_PCS_TX;
+            dev->events.tx_faults++;
+        }
+
+        /* Diagnose 1000BASE-T1 fault */
+        if ((fault_internal != PHY_FAULT_NONE) && (dev->speed == PHY_SPEED_100M)) {
+            // TODO: Read 100BASE-T1 Status Register (0x8108)
+            // TODO: Read dev 3, reg 0x8230
+        }
+
+        /* Diagnose 1000BASE-T1 fault */
+        if ((fault_internal != PHY_FAULT_NONE) && (dev->speed == PHY_SPEED_1G)) {
+
+            /* Read the 1000BASE-T1 PCS Status register */
+            PHY_READ_REG(PHY_88Q211X_DEV_PCS_1000BASE_T1_STATUS_1, PHY_88Q211X_REG_PCS_1000BASE_T1_STATUS_1, &reg_data);
+            PHY_CHECK_END;
+            // if (!(reg_data & PHY_88Q211X_1000BASE_T1_FAULT)) {
+            // }
+
+            /* Check if the fault is due to a high bit error rate (BER) */
+            if (fault_internal == PHY_FAULT_PCS_RX) {
+
+                /* Check the FEC status register */
+                PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T_PCS_STATUS_2, PHY_88Q211X_REG_1000BASE_T_PCS_STATUS_2, &reg_data);
+                PHY_CHECK_END;
+
+                /* If a high BER has been detected then report it */
+                if (reg_data & PHY_88Q211X_HIGH_BER) {
+                    fault_internal = PHY_FAULT_HIGH_BER;
+                    // TODO: printf("High BER detected. Number of block errors (max 255) = %u\n", reg_data & PHY_88Q211X_ERRORED_BLOCKS_COUNTER_MASK);
+                }
+            }
+        }
+    }
+
+    /* PMA Fault check: unsupported */
+
+    /* Auto-negotiation fault check: TODO */
+
+    /* SGMII fault check: TODO */
+
+    /* Get the packet CRC error count and clear the packet checker counter */
+    status = PHY_88Q211X_ReadPacketCheckerCounters(dev, NULL, &errors, true);
+    PHY_CHECK_END;
+    dev->events.crc_errors += errors;
+
+    /* If an error has occured change the status to reflect it */
+    if (fault_internal != PHY_FAULT_NONE) status = PHY_FAULT_DETECTED;
+    *fault = fault_internal;
 
 end:
 

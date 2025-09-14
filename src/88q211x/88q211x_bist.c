@@ -18,14 +18,16 @@ phy_status_t PHY_88Q211X_EnablePacketGenerator(phy_handle_88q211x_t *dev) {
     uint16_t     reg_data;
 
     /* Get the current packet generator state */
-    PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, &reg_data);
+    PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_GENERATOR_CTRL, &reg_data);
     PHY_CHECK_RET;
 
     /* Enable the packet generator */
+    reg_data |= 0xff00; /* Set the burst size to 255 */
     reg_data |= PHY_88Q211X_PACKET_GEN_EN;
+    reg_data |= PHY_88Q211X_PACKET_GEN_TRANSMIT;
 
     /* Write the new current packet generator state */
-    PHY_WRITE_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, reg_data);
+    PHY_WRITE_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_GENERATOR_CTRL, reg_data);
     PHY_CHECK_RET;
 
     return status;
@@ -38,13 +40,13 @@ phy_status_t PHY_88Q211X_DisablePacketGenerator(phy_handle_88q211x_t *dev) {
     uint16_t     reg_data;
 
     /* Get the current packet generator state */
-    PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, &reg_data);
+    PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_GENERATOR_CTRL, &reg_data);
     PHY_CHECK_RET;
 
     /* Only disable if the packet generator was enabled */
     if (reg_data & PHY_88Q211X_PACKET_GEN_EN) {
         reg_data &= ~PHY_88Q211X_PACKET_GEN_EN;
-        PHY_WRITE_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, reg_data);
+        PHY_WRITE_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_GENERATOR_CTRL, reg_data);
         PHY_CHECK_RET;
     }
 
@@ -58,7 +60,7 @@ phy_status_t PHY_88Q211X_EnablePacketChecker(phy_handle_88q211x_t *dev) {
     uint16_t     reg_data;
 
     /* Get the current packet checker state */
-    PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, &reg_data);
+    PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, &reg_data);
     PHY_CHECK_RET;
 
     /* Return early if the packet checker is already enabled */
@@ -66,12 +68,12 @@ phy_status_t PHY_88Q211X_EnablePacketChecker(phy_handle_88q211x_t *dev) {
 
     /* Step 1: Start the counter */
     reg_data |= PHY_88Q211X_PACKET_CHECK_SAMPLE;
-    PHY_WRITE_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, reg_data);
+    PHY_WRITE_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, reg_data);
     PHY_CHECK_RET;
 
     /* Step 2: Start the packet checker */
     reg_data |= PHY_88Q211X_PACKET_CHECK_SAMPLE;
-    PHY_WRITE_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, reg_data);
+    PHY_WRITE_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, reg_data);
     PHY_CHECK_RET;
 
     return status;
@@ -85,17 +87,18 @@ phy_status_t PHY_88Q211X_DisablePacketChecker(phy_handle_88q211x_t *dev) {
     uint8_t      errors;
 
     /* Get the packet and error counts and reset the packet checker */
-    PHY_88Q211X_ReadPacketCheckerCounters(dev, NULL, &errors, false);
+    status = PHY_88Q211X_ReadPacketCheckerCounters(dev, NULL, &errors, true);
+    PHY_CHECK_RET;
     dev->events.crc_errors += errors;
 
     /* Get the current packet checker state */
-    PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, &reg_data);
+    PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, &reg_data);
     PHY_CHECK_RET;
 
     /* Only disable if the packet checker was enabled (this will also clear the counters) */
     if (reg_data & PHY_88Q211X_PACKET_CHECK_EN) {
         reg_data &= ~PHY_88Q211X_PACKET_CHECK_EN;
-        PHY_WRITE_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, reg_data);
+        PHY_WRITE_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, reg_data);
         PHY_CHECK_RET;
     }
 
@@ -109,7 +112,7 @@ phy_status_t PHY_88Q211X_ReadPacketCheckerCounters(phy_handle_88q211x_t *dev, ui
     uint16_t     reg_data;
 
     /* Get the packet checker counters */
-    PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_COUNT, PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_COUNT, &reg_data);
+    PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_COUNT, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_COUNT, &reg_data);
     PHY_CHECK_RET;
 
     /* Extract the data */
@@ -120,12 +123,12 @@ phy_status_t PHY_88Q211X_ReadPacketCheckerCounters(phy_handle_88q211x_t *dev, ui
     if (clear) {
 
         /* Get the current packet checker status */
-        PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, &reg_data);
+        PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, &reg_data);
         PHY_CHECK_RET;
 
         /* Reset the counters */
         reg_data &= ~PHY_88Q211X_PACKET_CHECK_COUNTER_RST;
-        PHY_WRITE_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, reg_data);
+        PHY_WRITE_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, reg_data);
         PHY_CHECK_RET;
     }
 
@@ -171,6 +174,101 @@ phy_status_t PHY_88Q211X_ConfigureGMIISteering(phy_handle_88q211x_t *dev, phy_ho
 
 phy_status_t PHY_88Q211X_ResetGMIISteering(phy_handle_88q211x_t *dev) {
     return PHY_88Q211X_ConfigureGMIISteering(dev, PHY_HOST_RX_88Q211X_LINE_RX, PHY_LINE_TX_88Q211X_HOST_TX, PHY_PACKET_CHECK_88Q211X_LINE);
+}
+
+
+phy_status_t PHY_88Q211X_Start100MBIST(phy_handle_88q211x_t *dev) {
+
+    phy_status_t status = PHY_OK;
+
+    PHY_LOCK;
+
+    /* Set the output of the packet generator to be the input of the packet checker */
+    status = PHY_88Q211X_ConfigureGMIISteering(dev, PHY_HOST_RX_88Q211X_LINE_RX, PHY_LINE_TX_88Q211X_HOST_TX, PHY_PACKET_CHECK_88Q211X_PACKET_GEN);
+    PHY_CHECK_END;
+
+    /* Enable the packet checker */
+    status = PHY_88Q211X_EnablePacketChecker(dev);
+    PHY_CHECK_END;
+
+    /* Enable the packet generator */
+    status = PHY_88Q211X_EnablePacketGenerator(dev);
+    PHY_CHECK_END;
+
+end:
+
+    PHY_UNLOCK;
+    return status;
+}
+
+
+phy_status_t PHY_88Q211X_Stop100MBIST(phy_handle_88q211x_t *dev) {
+
+    phy_status_t status = PHY_OK;
+
+    PHY_LOCK;
+
+    /* Set the steering back to normal (also disables the packet generator) */
+    status = PHY_88Q211X_ResetGMIISteering(dev);
+    PHY_CHECK_END;
+
+end:
+
+    PHY_UNLOCK;
+    return status;
+}
+
+
+phy_status_t PHY_88Q211X_Get100MBISTResults(phy_handle_88q211x_t *dev, bool *error) {
+
+    phy_status_t status           = PHY_OK;
+    uint16_t     reg_data         = 0;
+    uint8_t      packets_received = 0;
+    uint8_t      errors           = 0;
+    bool         done             = false;
+
+    PHY_LOCK;
+
+    /* Poll until data is ready */
+    for (uint_fast8_t i = 0; !done && (i < 10); i++) {
+
+        /* Get the current packet generator state */
+        PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_GENERATOR_CTRL, &reg_data);
+        PHY_CHECK_END;
+
+        /* Check if all packets have been generated (enable self clears) */
+        if (!(reg_data & PHY_88Q211X_PACKET_GEN_EN)) {
+            done = true;
+        } else {
+            dev->callbacks->callback_delay_ms(dev->config.timeout / 10, dev->callback_context);
+        }
+    }
+
+    /* Timed out */
+    if (!done) {
+        status = PHY_88Q211X_Stop100MBIST(dev);
+        PHY_CHECK_END;
+        status = PHY_TIMEOUT;
+        goto end;
+    }
+
+    /* Get the results */
+    status = PHY_88Q211X_ReadPacketCheckerCounters(dev, &packets_received, &errors, false);
+    PHY_CHECK_END;
+
+    /* If there were any errors then set error to true */
+    *error = (bool) errors;
+
+    /* TODO: Calculate the error percentage */
+
+    /* Stop the BIST */
+    status = PHY_88Q211X_Stop100MBIST(dev);
+    PHY_CHECK_END;
+
+end:
+
+    PHY_UNLOCK;
+    return status;
 }
 
 
