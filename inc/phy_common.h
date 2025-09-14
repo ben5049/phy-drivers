@@ -20,6 +20,7 @@ extern "C" {
 
 
 #define PHY_GET_SPEED_MBPS(phy_handle) (((phy_handle).speed == PHY_SPEED_10M) ? 10 : (((phy_handle).speed == PHY_SPEED_100M) ? 100 : (((phy_handle).speed == PHY_SPEED_1G) ? 1000 : 0)))
+#define PHY_SPEED_MBPS_TO_ENUM(mbps)   (((mbps) == 10) ? PHY_SPEED_10M : (((mbps) == 100) ? PHY_SPEED_100M : (((mbps) == 1000) ? PHY_SPEED_1G : PHY_SPEED_INVALID)))
 
 
 typedef enum {
