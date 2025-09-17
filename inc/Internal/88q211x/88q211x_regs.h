@@ -84,8 +84,9 @@ enum phy_88q211x_pma_pmd_dev_e {
 #define PHY_88Q211X_SPEED_100M            (0x0)
 #define PHY_88Q211X_SPEED_1000M           (0x1)
 
-#define PHY_88Q211X_PMA_TRANSMIT_DISABLE  (1 << 14)
 #define PHY_88Q211X_IEEE_POWER_DOWN       (1 << 11) /* Both 1.0900.11 and 3.0000.11 control power down */
+#define PHY_88Q211X_PMA_TRANSMIT_DISABLE  (1 << 14)
+#define PHY_88Q211X_PMA_PMD_RST           (1 << 15)
 
 /* ---------------------------------------------------------------------------- */
 /* Common Control Registers */
@@ -396,6 +397,15 @@ enum phy_88q211x_rgmii_dev_e {
 /* SGMII Registers */
 /* ---------------------------------------------------------------------------- */
 
+enum phy_88q211x_fiber_reg_e {
+    PHY_88Q211X_REG_FIBER_CTRL = 0x8000,
+};
+
+enum phy_88q211x_fiber_dev_e {
+    PHY_88Q211X_DEV_FIBER_CTRL = 0x04,
+};
+
+#define PHY_88Q211X_SGMII_POWER_DOWN (1 << 11)
 
 /* ---------------------------------------------------------------------------- */
 /* PTP Registers */

@@ -9,6 +9,7 @@
 #include "internal/88q211x/88q211x_init.h"
 #include "internal/88q211x/88q211x_regs.h"
 #include "internal/88q211x/88q211x_bist.h"
+#include "internal/88q211x/88q211x_xmii.h"
 #include "internal/phy_utils.h"
 
 
@@ -58,67 +59,33 @@ static phy_status_t PHY_88Q211X_CheckID(phy_handle_88q211x_t *dev) {
 }
 
 
-static phy_status_t PHY_88Q211X_SoftwareResetRGMII(phy_handle_88q211x_t *dev) {
+static phy_status_t PHY_88Q211X_SoftwareResetCopper(phy_handle_88q211x_t *dev) {
 
     phy_status_t status   = PHY_OK;
     uint16_t     reg_data = 0;
 
-    /* Read the reset and control register */
-    PHY_READ_REG(PHY_88Q211X_DEV_RST_CTRL, PHY_88Q211X_REG_RST_CTRL, &reg_data);
+    /* Reset the PMA and PMD control register */
+    PHY_READ_REG(PHY_88Q211X_DEV_BASE_T1_CTRL, PHY_88Q211X_REG_BASE_T1_CTRL, &reg_data);
     PHY_CHECK_RET;
 
-    /* Set the RGMII reset bit */
-    reg_data |= PHY_88Q211X_RST_RGMII;
-
-    /* Write the reset and control register */
-    PHY_WRITE_REG(PHY_88Q211X_DEV_RST_CTRL, PHY_88Q211X_REG_RST_CTRL, reg_data);
+    /* Set the reset bit (self clearing) */
+    reg_data |= PHY_88Q211X_PMA_PMD_RST;
+    PHY_WRITE_REG(PHY_88Q211X_DEV_BASE_T1_CTRL, PHY_88Q211X_REG_BASE_T1_CTRL, reg_data);
     PHY_CHECK_RET;
 
-    /* The RGMII reset bit is not self clearing so unset the RGMII reset bit */
-    reg_data &= ~PHY_88Q211X_RST_RGMII;
+    /* Reset other copper */
+    // PHY_READ_REG(0x03, 0x0900, &reg_data);
+    // PHY_CHECK_RET;
+    // reg_data |= 0x8000;
+    // PHY_WRITE_REG(0x03, 0x0900, reg_data);
+    // PHY_CHECK_RET;
 
-    /* Write the reset and control register */
-    PHY_WRITE_REG(PHY_88Q211X_DEV_RST_CTRL, PHY_88Q211X_REG_RST_CTRL, reg_data);
-    PHY_CHECK_RET;
-
-    return status;
-}
-
-
-static phy_status_t PHY_88Q211X_ConfigureRGMII(phy_handle_88q211x_t *dev) {
-
-    phy_status_t status     = PHY_OK;
-    uint16_t     reg_data   = 0;
-    bool         write_back = false;
-
-    /* Get the current RGMII settings */
-    PHY_READ_REG(PHY_88Q211X_DEV_RGMII_COM_PORT, PHY_88Q211X_REG_RGMII_COM_PORT, &reg_data);
-    PHY_CHECK_RET;
-
-    /* If the new tx clk delay setting is different from the old one then change it and call for a reset */
-    if (dev->config.tx_clk_internal_delay && !(reg_data & PHY_88Q211X_RGMII_TX_CLK_INTERNAL_DELAY)) {
-        reg_data   |= PHY_88Q211X_RGMII_TX_CLK_INTERNAL_DELAY;
-        write_back  = true;
-    }
-
-    /* If the new rx clk delay setting is different from the old one then change it and call for a reset */
-    if (dev->config.rx_clk_internal_delay && !(reg_data & PHY_88Q211X_RGMII_RX_CLK_INTERNAL_DELAY)) {
-        reg_data   |= PHY_88Q211X_RGMII_RX_CLK_INTERNAL_DELAY;
-        write_back  = true;
-    }
-
-    /* Only write back if required */
-    if (write_back) {
-        PHY_READ_REG(PHY_88Q211X_DEV_RGMII_COM_PORT, PHY_88Q211X_REG_RGMII_COM_PORT, &reg_data);
-        PHY_CHECK_RET;
-        /* Reset for the change to take effect */
-        status = PHY_88Q211X_SoftwareResetRGMII(dev);
-        PHY_CHECK_RET;
-    }
-
-    // TODO: remove, checking write was a success IT ISN'T
-    PHY_READ_REG(PHY_88Q211X_DEV_RGMII_COM_PORT, PHY_88Q211X_REG_RGMII_COM_PORT, &reg_data);
-    PHY_CHECK_RET;
+    /* Reset other other copper */
+    // PHY_READ_REG(0x07, 0x0200, &reg_data);
+    // PHY_CHECK_RET;
+    // reg_data |= 0x8000;
+    // PHY_WRITE_REG(0x07, 0x0200, reg_data);
+    // PHY_CHECK_RET;
 
     return status;
 }
@@ -247,17 +214,19 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     status = PHY_88Q211X_CheckID(dev);
     PHY_CHECK_END;
 
-    /* Check speed & mode */
-    PHY_READ_REG(PHY_88Q211X_DEV_BASE_T1_PMA_PMD_CTRL, PHY_88Q211X_REG_BASE_T1_PMA_PMD_CTRL, &reg_data);
+    /* Reset the copper circuits */
+    status = PHY_88Q211X_SoftwareResetCopper(dev);
     PHY_CHECK_END;
-    dev->role  = (reg_data & PHY_88Q211X_MASTER) ? PHY_ROLE_MASTER : PHY_ROLE_SLAVE;
-    dev->speed = (((reg_data & PHY_88Q211X_SPEED_MASK) >> PHY_88Q211X_SPEED_SHIFT) == PHY_88Q211X_SPEED_100M) ? PHY_SPEED_100M : PHY_SPEED_1G; /* TODO: Also check for invalid speed */
 
-    /* Configure RGMII timing */
+    /* Configure interfaces */
     if (dev->config.interface == PHY_INTERFACE_RGMII) {
         status = PHY_88Q211X_ConfigureRGMII(dev);
-        PHY_CHECK_END;
+    } else if (dev->config.interface == PHY_INTERFACE_SGMII) {
+        status = PHY_88Q211X_ConfigureSGMII(dev);
+    } else {
+        status = PHY_PARAMETER_ERROR;
     }
+    PHY_CHECK_END;
 
     /* Set the fifo size */
     status = PHY_88Q211X_SetFifoSize(dev);
@@ -266,6 +235,12 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     /* Reset GMII steering (disable loopback, enable packet checker, disable packet generator) */
     status = PHY_88Q211X_ResetGMIISteering(dev);
     PHY_CHECK_END;
+
+    /* Check speed & mode */
+    PHY_READ_REG(PHY_88Q211X_DEV_BASE_T1_PMA_PMD_CTRL, PHY_88Q211X_REG_BASE_T1_PMA_PMD_CTRL, &reg_data);
+    PHY_CHECK_END;
+    dev->role  = (reg_data & PHY_88Q211X_MASTER) ? PHY_ROLE_MASTER : PHY_ROLE_SLAVE;
+    dev->speed = (((reg_data & PHY_88Q211X_SPEED_MASK) >> PHY_88Q211X_SPEED_SHIFT) == PHY_88Q211X_SPEED_100M) ? PHY_SPEED_100M : PHY_SPEED_1G; /* TODO: Also check for invalid speed */
 
     /* Set the port role */
     if ((dev->role != dev->config.default_role) && (dev->config.default_role != PHY_ROLE_UNKNOWN)) {
@@ -285,7 +260,6 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     reg_data |= PHY_88Q211X_100BASE_T1_POL_CORRECTION;
     PHY_WRITE_REG(PHY_88Q211X_DEV_100BASE_T1_CU_CTRL, PHY_88Q211X_REG_100BASE_T1_CU_CTRL, reg_data);
     PHY_CHECK_END;
-
 
     /* Move from unconfigured to IDLE */
     dev->state = PHY_STATE_88Q211X_IDLE;
