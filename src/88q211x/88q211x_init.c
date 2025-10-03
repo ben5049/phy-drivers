@@ -5,6 +5,8 @@
  *      Author: bens1
  */
 
+#include "memory.h"
+
 #include "88q211x.h"
 #include "internal/88q211x/88q211x_init.h"
 #include "internal/88q211x/88q211x_regs.h"
@@ -13,12 +15,8 @@
 #include "internal/phy_utils.h"
 
 
-static void PHY_88Q211X_ResetEventCounters(phy_handle_88q211x_t *dev) {
-    dev->events.writes     = 0;
-    dev->events.reads      = 0;
-    dev->events.crc_errors = 0;
-    dev->events.rx_faults  = 0;
-    dev->events.tx_faults  = 0;
+static inline void PHY_88Q211X_ResetEventCounters(phy_handle_88q211x_t *dev) {
+    memset(&dev->events, 0, sizeof(phy_event_counters_88q211x_t));
 }
 
 
