@@ -122,6 +122,7 @@ typedef struct {
     bool                   autoneg;
     phy_role_t             role;
     bool                   linkup;
+    bool                   temp_sensor_enabled;
     const phy_callbacks_t *callbacks;
     void                  *callback_context;
 } phy_handle_base_t;

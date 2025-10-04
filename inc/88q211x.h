@@ -81,6 +81,7 @@ typedef struct {
     bool                   autoneg;
     phy_role_t             role;
     bool                   linkup;
+    bool                   temp_sensor_enabled;
     const phy_callbacks_t *callbacks;
     void                  *callback_context;
 
@@ -138,7 +139,7 @@ phy_status_t PHY_88Q211X_Get1000MBISTResults(phy_handle_88q211x_t *dev, bool *er
 phy_status_t PHY_88Q211X_RunRGMIIImpedanceCalibration(phy_handle_88q211x_t *dev);
 
 phy_status_t PHY_88Q211X_EnableTemperatureSensor(phy_handle_88q211x_t *dev);
-phy_status_t PHY_88Q211X_ReadTemperature(phy_handle_88q211x_t *dev, int16_t *temp);
+phy_status_t PHY_88Q211X_ReadTemperature(phy_handle_88q211x_t *dev, float *temp, bool *valid);
 
 phy_status_t PHY_88Q211X_EnableIEEEPowerDown(phy_handle_88q211x_t *dev);
 phy_status_t PHY_88Q211X_DisableIEEEPowerDown(phy_handle_88q211x_t *dev);
