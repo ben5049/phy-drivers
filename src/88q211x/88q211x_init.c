@@ -29,29 +29,29 @@ static phy_status_t PHY_88Q211X_CheckID(phy_handle_88q211x_t *dev) {
     uint8_t      revision = 0;
 
     /* Read the first ID register */
-    PHY_READ_REG(PHY_88Q211X_DEV_PMA_PMD_DEV_ID_1, PHY_88Q211X_REG_PMA_PMD_DEV_ID_1, &reg_data);
-    PHY_CHECK_RET;
+    status = PHY_READ_REG(PHY_88Q211X_DEV_PMA_PMD_DEV_ID_1, PHY_88Q211X_REG_PMA_PMD_DEV_ID_1, &reg_data);
+    PHY_CHECK_RET(status);
 
     /* Get bits 3:18 of the organisationally unique identifier */
     oui |= (uint32_t) ((reg_data & PHY_88Q211X_OUI_3_18_MASK) >> PHY_88Q211X_OUI_3_18_SHIFT) << 3;
 
     /* Read the second ID register */
-    PHY_READ_REG(PHY_88Q211X_DEV_PMA_PMD_DEV_ID_2, PHY_88Q211X_REG_PMA_PMD_DEV_ID_2, &reg_data);
-    PHY_CHECK_RET;
+    status = PHY_READ_REG(PHY_88Q211X_DEV_PMA_PMD_DEV_ID_2, PHY_88Q211X_REG_PMA_PMD_DEV_ID_2, &reg_data);
+    PHY_CHECK_RET(status);
 
     /* Get bits 19:24 of the organisationally unique identifier and check it is correct */
     oui |= ((reg_data & PHY_88Q211X_OUI_19_24_MASK) >> PHY_88Q211X_OUI_19_24_SHIFT) << 19;
     if (oui != PHY_88Q211X_OUI) status = PHY_ID_ERROR;
-    PHY_CHECK_RET;
+    PHY_CHECK_RET(status);
 
     /* Get the model number and check it is correct */
     model = (reg_data & PHY_88Q211X_MODEL_NUMBER_MASK) >> PHY_88Q211X_MODEL_NUMBER_SHIFT;
     if (model != PHY_88Q211X_MODEL_NUMBER) status = PHY_ID_ERROR;
-    PHY_CHECK_RET;
+    PHY_CHECK_RET(status);
 
     /* Get the revision number (only for debug purposes) */
     revision = (reg_data & PHY_88Q211X_REVISION_NUMBER_MASK) >> PHY_88Q211X_REVISION_NUMBER_SHIFT;
-    PHY_UNUSED(revision);
+    UNUSED(revision);
 
     return status;
 }
@@ -63,27 +63,27 @@ static phy_status_t PHY_88Q211X_SoftwareResetCopper(phy_handle_88q211x_t *dev) {
     uint16_t     reg_data = 0;
 
     /* Reset the PMA and PMD control register */
-    PHY_READ_REG(PHY_88Q211X_DEV_BASE_T1_CTRL, PHY_88Q211X_REG_BASE_T1_CTRL, &reg_data);
-    PHY_CHECK_RET;
+    status = PHY_READ_REG(PHY_88Q211X_DEV_BASE_T1_CTRL, PHY_88Q211X_REG_BASE_T1_CTRL, &reg_data);
+    PHY_CHECK_RET(status);
 
     /* Set the reset bit (self clearing) */
     reg_data |= PHY_88Q211X_PMA_PMD_RST;
-    PHY_WRITE_REG(PHY_88Q211X_DEV_BASE_T1_CTRL, PHY_88Q211X_REG_BASE_T1_CTRL, reg_data);
-    PHY_CHECK_RET;
+    status    = PHY_WRITE_REG(PHY_88Q211X_DEV_BASE_T1_CTRL, PHY_88Q211X_REG_BASE_T1_CTRL, reg_data);
+    PHY_CHECK_RET(status);
 
     /* Reset other copper */
-    // PHY_READ_REG(0x03, 0x0900, &reg_data);
-    // PHY_CHECK_RET;
+    // status = PHY_READ_REG(0x03, 0x0900, &reg_data);
+    // PHY_CHECK_RET(status);
     // reg_data |= 0x8000;
-    // PHY_WRITE_REG(0x03, 0x0900, reg_data);
-    // PHY_CHECK_RET;
+    // status = PHY_WRITE_REG(0x03, 0x0900, reg_data);
+    // PHY_CHECK_RET(status);
 
     /* Reset other other copper */
-    // PHY_READ_REG(0x07, 0x0200, &reg_data);
-    // PHY_CHECK_RET;
+    // status = PHY_READ_REG(0x07, 0x0200, &reg_data);
+    // PHY_CHECK_RET(status);
     // reg_data |= 0x8000;
-    // PHY_WRITE_REG(0x07, 0x0200, reg_data);
-    // PHY_CHECK_RET;
+    // status = PHY_WRITE_REG(0x07, 0x0200, reg_data);
+    // PHY_CHECK_RET(status);
 
     return status;
 }
@@ -99,8 +99,8 @@ static phy_status_t PHY_88Q211X_SetFifoSize(phy_handle_88q211x_t *dev) {
         /* Set the 100BASE-T1 FIFO size */
         {
             /* Get the current FIFO size */
-            PHY_READ_REG(PHY_88Q211X_DEV_MAC_CTRL, PHY_88Q211X_REG_MAC_CTRL, &reg_data);
-            PHY_CHECK_RET;
+            status = PHY_READ_REG(PHY_88Q211X_DEV_MAC_CTRL, PHY_88Q211X_REG_MAC_CTRL, &reg_data);
+            PHY_CHECK_RET(status);
 
             /* If the new fifo size is different from the old one then change it */
             if (((reg_data & PHY_88Q211X_CU_TX_FIFO_DEPTH_MASK) >> PHY_88Q211X_CU_TX_FIFO_DEPTH_SHIFT) != dev->config.fifo_size) {
@@ -108,16 +108,16 @@ static phy_status_t PHY_88Q211X_SetFifoSize(phy_handle_88q211x_t *dev) {
                 reg_data |= ((uint16_t) dev->config.fifo_size << PHY_88Q211X_CU_TX_FIFO_DEPTH_SHIFT) & PHY_88Q211X_CU_TX_FIFO_DEPTH_MASK;
 
                 /* Write the data back */
-                PHY_WRITE_REG(PHY_88Q211X_DEV_MAC_CTRL, PHY_88Q211X_REG_MAC_CTRL, reg_data);
-                PHY_CHECK_RET;
+                status = PHY_WRITE_REG(PHY_88Q211X_DEV_MAC_CTRL, PHY_88Q211X_REG_MAC_CTRL, reg_data);
+                PHY_CHECK_RET(status);
             }
         }
 
         /* Set the 1000BASE-T1 FIFO size (3.FD20.1:0) */
         {
             /* Get the current FIFO size */
-            PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_TX_FIFO_CTRL, PHY_88Q211X_REG_1000BASE_T1_TX_FIFO_CTRL, &reg_data);
-            PHY_CHECK_RET;
+            status = PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_TX_FIFO_CTRL, PHY_88Q211X_REG_1000BASE_T1_TX_FIFO_CTRL, &reg_data);
+            PHY_CHECK_RET(status);
 
             /* If the new fifo size is different from the old one then change it */
             if (((reg_data & PHY_88Q211X_FIBER_TX_FIFO_DEPTH_MASK) >> PHY_88Q211X_FIBER_TX_FIFO_DEPTH_SHIFT) != dev->config.fifo_size) {
@@ -125,8 +125,8 @@ static phy_status_t PHY_88Q211X_SetFifoSize(phy_handle_88q211x_t *dev) {
                 reg_data |= ((uint16_t) dev->config.fifo_size << PHY_88Q211X_FIBER_TX_FIFO_DEPTH_SHIFT) & PHY_88Q211X_FIBER_TX_FIFO_DEPTH_MASK;
 
                 /* Write the data back */
-                PHY_WRITE_REG(PHY_88Q211X_DEV_MAC_CTRL, PHY_88Q211X_REG_MAC_CTRL, reg_data);
-                PHY_CHECK_RET;
+                status = PHY_WRITE_REG(PHY_88Q211X_DEV_MAC_CTRL, PHY_88Q211X_REG_MAC_CTRL, reg_data);
+                PHY_CHECK_RET(status);
             }
         }
     }
@@ -134,13 +134,13 @@ static phy_status_t PHY_88Q211X_SetFifoSize(phy_handle_88q211x_t *dev) {
     /* TODO: Set the SGMII FIFO size (4.8010.15:14) */
     else if (dev->config.interface == PHY_INTERFACE_SGMII) {
         status = PHY_NOT_IMPLEMENTED_ERROR;
-        PHY_CHECK_RET;
+        PHY_CHECK_RET(status);
     }
 
     /* Invalid interface */
     else {
         status = PHY_PARAMETER_ERROR;
-        PHY_CHECK_RET;
+        PHY_CHECK_RET(status);
     }
 
     return status;
@@ -157,13 +157,13 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
 
     /* Check the device hasn't already been initialised. Note this may cause an unintended error if the struct uses non-zeroed memory. */
     if (dev->state != PHY_STATE_88Q211X_UNCONFIGURED) status = PHY_ALREADY_CONFIGURED;
-    PHY_CHECK_RET;
+    PHY_CHECK_RET(status);
 
     /* Check config parameters. TODO: More */
     if ((config->variant == PHY_VARIANT_88Q2110) && (config->interface == PHY_INTERFACE_SGMII)) status = PHY_PARAMETER_ERROR;
     if (config->default_role >= PHY_ROLE_INVALID) status = PHY_PARAMETER_ERROR;
     if ((config->default_speed != PHY_SPEED_100M) && (config->default_speed != PHY_SPEED_1G)) status = PHY_PARAMETER_ERROR;
-    PHY_CHECK_RET;
+    PHY_CHECK_RET(status);
 
     /* Check the callbacks */
     if (callbacks->callback_read_reg == NULL) status = PHY_PARAMETER_ERROR;
@@ -174,11 +174,12 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     if (callbacks->callback_take_mutex == NULL) status = PHY_PARAMETER_ERROR;
     if (callbacks->callback_give_mutex == NULL) status = PHY_PARAMETER_ERROR;
     if (callbacks->callback_link_status_change == NULL) status = PHY_PARAMETER_ERROR;
-    PHY_CHECK_RET;
+    if (callbacks->callback_write_log == NULL) status = PHY_PARAMETER_ERROR;
+    PHY_CHECK_RET(status);
 
     /* Take the mutex */
     status = callbacks->callback_take_mutex(config->timeout, dev->callback_context);
-    PHY_CHECK_RET;
+    PHY_CHECK_RET(status);
 
     /* Assign the inputs */
     dev->config    = *config;
@@ -236,7 +237,7 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     PHY_CHECK_END;
 
     /* Check speed & mode */
-    PHY_READ_REG(PHY_88Q211X_DEV_BASE_T1_PMA_PMD_CTRL, PHY_88Q211X_REG_BASE_T1_PMA_PMD_CTRL, &reg_data);
+    status = PHY_READ_REG(PHY_88Q211X_DEV_BASE_T1_PMA_PMD_CTRL, PHY_88Q211X_REG_BASE_T1_PMA_PMD_CTRL, &reg_data);
     PHY_CHECK_END;
     dev->role  = (reg_data & PHY_88Q211X_MASTER) ? PHY_ROLE_MASTER : PHY_ROLE_SLAVE;
     dev->speed = (((reg_data & PHY_88Q211X_SPEED_MASK) >> PHY_88Q211X_SPEED_SHIFT) == PHY_88Q211X_SPEED_100M) ? PHY_SPEED_100M : PHY_SPEED_1G; /* TODO: Also check for invalid speed */
@@ -254,10 +255,10 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     }
 
     /* Enable polarity correction (for 100BASE-T1) */
-    PHY_READ_REG(PHY_88Q211X_DEV_100BASE_T1_CU_CTRL, PHY_88Q211X_REG_100BASE_T1_CU_CTRL, &reg_data);
+    status = PHY_READ_REG(PHY_88Q211X_DEV_100BASE_T1_CU_CTRL, PHY_88Q211X_REG_100BASE_T1_CU_CTRL, &reg_data);
     PHY_CHECK_END;
     reg_data |= PHY_88Q211X_100BASE_T1_POL_CORRECTION;
-    PHY_WRITE_REG(PHY_88Q211X_DEV_100BASE_T1_CU_CTRL, PHY_88Q211X_REG_100BASE_T1_CU_CTRL, reg_data);
+    status    = PHY_WRITE_REG(PHY_88Q211X_DEV_100BASE_T1_CU_CTRL, PHY_88Q211X_REG_100BASE_T1_CU_CTRL, reg_data);
     PHY_CHECK_END;
 
     /* Move from unconfigured to IDLE */

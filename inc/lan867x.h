@@ -23,6 +23,7 @@ extern "C" {
 typedef struct {
     atomic_int_fast32_t writes;
     atomic_int_fast32_t reads;
+    atomic_int_fast32_t smi_errors;
 } phy_event_counters_lan867x_t;
 
 /* Silicon revision of the chip */

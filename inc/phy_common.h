@@ -22,6 +22,14 @@ extern "C" {
 #define PHY_GET_SPEED_MBPS(phy_handle) (((phy_handle).speed == PHY_SPEED_10M) ? 10 : (((phy_handle).speed == PHY_SPEED_100M) ? 100 : (((phy_handle).speed == PHY_SPEED_1G) ? 1000 : 0)))
 #define PHY_SPEED_MBPS_TO_ENUM(mbps)   (((mbps) == 10) ? PHY_SPEED_10M : (((mbps) == 100) ? PHY_SPEED_100M : (((mbps) == 1000) ? PHY_SPEED_1G : PHY_SPEED_INVALID)))
 
+#ifndef UNUSED
+#define UNUSED(x) ((void) (x))
+#endif
+
+#ifndef PHY_LOGGING_ENABLED
+#define PHY_LOGGING_ENABLED (1)
+#endif
+
 
 typedef enum {
     PHY_OK      = 0,
@@ -95,6 +103,7 @@ typedef void (*phy_callback_delay_ns_t)(uint32_t ns, void *context);
 typedef phy_status_t (*phy_callback_take_mutex_t)(uint32_t timeout, void *context);
 typedef phy_status_t (*phy_callback_give_mutex_t)(void *context);
 typedef phy_status_t (*phy_callback_link_status_change_t)(bool linkup, void *context);
+typedef void (*phy_callback_write_log_t)(const char *format, ...);
 
 typedef struct {
     phy_callback_read_reg_t           callback_read_reg;           /* Read from a register */
@@ -105,6 +114,7 @@ typedef struct {
     phy_callback_take_mutex_t         callback_take_mutex;         /* Take the mutex protecting the device */
     phy_callback_give_mutex_t         callback_give_mutex;         /* Give the mutex protecting the device */
     phy_callback_link_status_change_t callback_link_status_change; /* Called when the process interrupt function detects a link status change */
+    phy_callback_write_log_t          callback_write_log;          /* Write a log message */
 } phy_callbacks_t;
 
 typedef struct {

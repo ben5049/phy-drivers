@@ -51,6 +51,7 @@ typedef enum {
 typedef struct {
     atomic_int_fast32_t writes;
     atomic_int_fast32_t reads;
+    atomic_int_fast32_t smi_errors;
     atomic_int_fast32_t crc_errors;
     atomic_int_fast32_t tx_faults;
     atomic_int_fast32_t rx_faults;

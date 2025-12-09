@@ -18,7 +18,7 @@ extern "C" {
 #include "phy_common.h"
 
 
-#define PHY_CHECK_RET                        \
+#define PHY_CHECK_RET(status)                \
     do {                                     \
         if (status != PHY_OK) return status; \
     } while (0)
@@ -31,7 +31,7 @@ extern "C" {
 #define PHY_LOCK                                                                                  \
     do {                                                                                          \
         status = dev->callbacks->callback_take_mutex(dev->config.timeout, dev->callback_context); \
-        PHY_CHECK_RET;                                                                            \
+        PHY_CHECK_RET(status);                                                                    \
     } while (0)
 
 #define PHY_UNLOCK dev->callbacks->callback_give_mutex(dev->callback_context)
@@ -61,20 +61,35 @@ extern "C" {
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_config_type, phy_config_base_t, default_role);  \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_config_type, phy_config_base_t, timeout);
 
+#define PHY_WRITE_REG(mmd_addr, reg_addr, data)                                                                                                           \
+    ({                                                                                                                                                    \
+        phy_status_t __status;                                                                                                                            \
+        __status = dev->callbacks->callback_write_reg(dev->config.phy_addr & 0x1f, mmd_addr, reg_addr, data, dev->config.timeout, dev->callback_context); \
+        if (__status != PHY_OK) {                                                                                                                         \
+            dev->events.smi_errors++;                                                                                                                     \
+        } else {                                                                                                                                          \
+            dev->events.writes++;                                                                                                                         \
+        }                                                                                                                                                 \
+        __status;                                                                                                                                         \
+    })
 
-#define PHY_UNUSED(x) ((void) (x))
+#define PHY_READ_REG(mmd_addr, reg_addr, data)                                                                                                           \
+    ({                                                                                                                                                   \
+        phy_status_t __status;                                                                                                                           \
+        __status = dev->callbacks->callback_read_reg(dev->config.phy_addr & 0x1f, mmd_addr, reg_addr, data, dev->config.timeout, dev->callback_context); \
+        if (__status != PHY_OK) {                                                                                                                        \
+            dev->events.smi_errors++;                                                                                                                    \
+        } else {                                                                                                                                         \
+            dev->events.reads++;                                                                                                                         \
+        }                                                                                                                                                \
+        __status;                                                                                                                                        \
+    })
 
-#define PHY_WRITE_REG(mmd_addr, reg_addr, data)                                                                                                  \
-    do {                                                                                                                                         \
-        status = dev->callbacks->callback_write_reg(dev->config.phy_addr, mmd_addr, reg_addr, data, dev->config.timeout, dev->callback_context); \
-        if (status == PHY_OK) dev->events.writes++;                                                                                              \
-    } while (0)
-
-#define PHY_READ_REG(mmd_addr, reg_addr, data)                                                                                                  \
-    do {                                                                                                                                        \
-        status = dev->callbacks->callback_read_reg(dev->config.phy_addr, mmd_addr, reg_addr, data, dev->config.timeout, dev->callback_context); \
-        if (status == PHY_OK) dev->events.reads++;                                                                                              \
-    } while (0)
+#if PHY_LOGGING_ENABLED == 1
+#define PHY_LOG(format, ...) dev->callbacks->callback_write_log("%s:%u (addr=%u) " format, __FILE_NAME__, __LINE__, dev->config.phy_addr, ##__VA_ARGS__)
+#else
+#define PHY_LOG(format, ...) PHY_OK
+#endif
 
 
 #ifdef __cplusplus
