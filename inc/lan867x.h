@@ -19,6 +19,19 @@ extern "C" {
 #include "phy_common.h"
 
 
+#define PHY_LAN867X_MMDCTRL                  (0x0d)
+#define PHY_LAN867X_MMDAD                    (0x0e)
+
+#define PHY_LAN867X_MMDCTRL_FNCTN_SHIFT      (14)
+#define PHY_LAN867X_MMDCTRL_FNCTN_MASK       (0x3 << PHY_LAN867X_MMDCTRL_FNCTN_SHIFT)
+#define PHY_LAN867X_MMDCTRL_FNCTN_ADDR       (0) /* Address */
+#define PHY_LAN867X_MMDCTRL_FNCTN_DATA       (1) /* Data - No post increment */
+#define PHY_LAN867X_MMDCTRL_FNCTN_DATA_PI_RW (2) /* Data - Post increment on reads and writes */
+#define PHY_LAN867X_MMDCTRL_FNCTN_DATA_PI_W  (3) /* Data - Post increment on writes only */
+#define PHY_LAN867X_MMDCTRL_DEVAD_SHIFT      (0)
+#define PHY_LAN867X_MMDCTRL_DEVAD_MASK       (0x1f << PHY_LAN867X_MMDCTRL_DEVAD_SHIFT)
+
+
 /* Stores information about driver events */
 typedef struct {
     atomic_int_fast32_t writes;
@@ -28,8 +41,10 @@ typedef struct {
 
 /* Silicon revision of the chip */
 typedef enum {
+    PHY_LAN867X_SI_REV_B1 = 0b0010,
+    PHY_LAN867X_SI_REV_C1 = 0b0100,
     PHY_LAN867X_SI_REV_C2 = 0b0101,
-    PHY_LAN867X_SI_REV_D0 = 0b0110
+    PHY_LAN867X_SI_REV_D0 = 0b0110,
 } phy_si_rev_lan867x_t;
 
 typedef struct {

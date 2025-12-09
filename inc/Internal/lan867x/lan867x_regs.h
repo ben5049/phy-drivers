@@ -20,6 +20,29 @@ extern "C" {
 /* Miscellaneous Registers */
 /* ---------------------------------------------------------------------------- */
 
+enum phy_lan867x_basic_reg_e {
+    PHY_LAN867X_REG_BASIC_CONTROL = 0x00,
+    PHY_LAN867X_REG_BASIC_STATUS  = 0x01,
+    PHY_LAN867X_REG_PHY_ID1       = 0x02,
+    PHY_LAN867X_REG_PHY_ID2       = 0x03,
+    PHY_LAN867X_REG_MMDCTRL       = PHY_LAN867X_MMDCTRL,
+    PHY_LAN867X_REG_MMDAD         = PHY_LAN867X_MMDAD,
+    PHY_LAN867X_REG_STRAP_CTRL0   = 0x12
+};
+
+enum phy_lan867x_basic_dev_e {
+    PHY_LAN867X_DEV_BASIC_CONTROL = 0x00,
+    PHY_LAN867X_DEV_BASIC_STATUS  = 0x00,
+    PHY_LAN867X_DEV_PHY_ID1       = 0x00,
+    PHY_LAN867X_DEV_PHY_ID2       = 0x00,
+    PHY_LAN867X_DEV_MMDCTRL       = 0x00,
+    PHY_LAN867X_DEV_MMDAD         = 0x00,
+    PHY_LAN867X_DEV_STRAP_CTRL0   = 0x00
+};
+
+/* ---------------------------------------------------------------------------- */
+/* Miscellaneous Registers */
+/* ---------------------------------------------------------------------------- */
 
 enum phy_lan867x_misc_reg_e {
     PHY_LAN867X_REG_CFGPRTCTL   = 0x000f,

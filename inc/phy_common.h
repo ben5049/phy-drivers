@@ -16,7 +16,6 @@ extern "C" {
 #include "stdint.h"
 #include "stdbool.h"
 #include "stdatomic.h"
-#include "hal.h"
 
 
 #define PHY_GET_SPEED_MBPS(phy_handle) (((phy_handle).speed == PHY_SPEED_10M) ? 10 : (((phy_handle).speed == PHY_SPEED_100M) ? 100 : (((phy_handle).speed == PHY_SPEED_1G) ? 1000 : 0)))
@@ -39,6 +38,7 @@ typedef enum {
     PHY_ALREADY_CONFIGURED,
     PHY_PARAMETER_ERROR,
     PHY_NOT_IMPLEMENTED_ERROR,
+    PHY_ADDR_ERROR,
     PHY_ID_ERROR,
     PHY_MUTEX_ERROR,
     PHY_INVALID_REGISTER_CONTENT_ERROR,

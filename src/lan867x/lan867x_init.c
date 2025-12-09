@@ -28,140 +28,155 @@ static phy_status_t PHY_LAN867X_IndirectRead(phy_handle_lan867x_t *dev, uint8_t 
     return status;
 }
 
+static phy_status_t PHY_LAN867X_CheckID(phy_handle_lan867x_t *dev){
+    phy_status_t status = PHY_NOT_IMPLEMENTED_ERROR;
+    uint16_t     reg_data;
+
+    // TODO:
+    return status;
+}
+
 /* Write the configuration to the PHY for EMI and standards compliance, as well as to enable SQI */
 static phy_status_t PHY_LAN867X_ApplyConfigEnableSQI(phy_handle_lan867x_t *dev) {
 
     phy_status_t status   = PHY_OK;
     uint16_t     reg_data = 0;
 
-    /* Revision C2 - Configuration Process (AN1699 section 3.1 - DS60001699G) */
-    if (dev->silicon_revision == PHY_LAN867X_SI_REV_C2) {
+    switch (dev->silicon_revision) {
 
-        /* Create variables */
-        int8_t   offset1, offset2;
-        uint16_t cfgparam1, cfgparam2, cfgparam3, cfgparam4, cfgparam5;
+        /* Revision C2 - Configuration Process (AN1699 section 3.1 - DS60001699G) */
+        case PHY_LAN867X_SI_REV_C2:
 
-        /* Get the first magic number */
-        status = PHY_LAN867X_IndirectRead(dev, 0x04, 0x1f, &reg_data);
-        PHY_CHECK_RET(status);
-        if ((reg_data & 0x10) != 0) {
-            offset1 = (int8_t) ((uint8_t) reg_data - 0x20);
-        } else {
-            offset1 = (int8_t) reg_data;
-        }
-        if ((offset1 > 15) || (offset1 < -5)) status = PHY_INVALID_REGISTER_CONTENT_ERROR;
-        PHY_CHECK_RET(status);
+            /* Create variables */
+            int8_t   offset1, offset2;
+            uint16_t cfgparam1, cfgparam2, cfgparam3, cfgparam4, cfgparam5;
 
-        /* Get the second magic number */
-        status = PHY_LAN867X_IndirectRead(dev, 0x08, 0x1f, &reg_data);
-        PHY_CHECK_RET(status);
-        if ((reg_data & 0x10) != 0) {
-            offset2 = (int8_t) ((uint8_t) reg_data - 0x20);
-        } else {
-            offset2 = (int8_t) reg_data;
-        }
+            /* Get the first magic number */
+            status = PHY_LAN867X_IndirectRead(dev, 0x04, 0x1f, &reg_data);
+            PHY_CHECK_RET(status);
+            if ((reg_data & 0x10) != 0) {
+                offset1 = (int8_t) ((uint8_t) reg_data - 0x20);
+            } else {
+                offset1 = (int8_t) reg_data;
+            }
+            if ((offset1 > 15) || (offset1 < -5)) status = PHY_INVALID_REGISTER_CONTENT_ERROR;
+            PHY_CHECK_RET(status);
 
-        /* More magic maths */
-        cfgparam1 = (uint16_t) (((9 + offset1) & 0x3f) << 10) | (uint16_t) (((14 + offset1) & 0x3f) << 4) | 0x03;
-        cfgparam2 = (uint16_t) (((40 + offset2) & 0x3f) << 10);
+            /* Get the second magic number */
+            status = PHY_LAN867X_IndirectRead(dev, 0x08, 0x1f, &reg_data);
+            PHY_CHECK_RET(status);
+            if ((reg_data & 0x10) != 0) {
+                offset2 = (int8_t) ((uint8_t) reg_data - 0x20);
+            } else {
+                offset2 = (int8_t) reg_data;
+            }
 
-        /* Write magic config registers */
-        status = PHY_WRITE_REG(0x1f, 0x00d0, 0x3f31);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00e0, 0xc000);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x0084, cfgparam1);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x008a, cfgparam2);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00e9, 0x9e50);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00f5, 0x1cf8);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00f4, 0xc020);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00f8, 0xb900);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00f9, 0x4e53);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x0081, 0x0080);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x0091, 0x9660);
-        PHY_CHECK_RET(status);
+            /* More magic maths */
+            cfgparam1 = (uint16_t) (((9 + offset1) & 0x3f) << 10) | (uint16_t) (((14 + offset1) & 0x3f) << 4) | 0x03;
+            cfgparam2 = (uint16_t) (((40 + offset2) & 0x3f) << 10);
 
-        /* Even more magic maths for SQI */
-        cfgparam3 = (uint16_t) (((5 + offset1) & 0x3f) << 8) | (uint16_t) ((9 + offset1) & 0x3f);
-        cfgparam4 = (uint16_t) (((9 + offset1) & 0x3f) << 8) | (uint16_t) ((14 + offset1) & 0x3f);
-        cfgparam5 = (uint16_t) (((17 + offset1) & 0x3f) << 8) | (uint16_t) ((22 + offset1) & 0x3f);
+            /* Write magic config registers */
+            status = PHY_WRITE_REG(0x1f, 0x00d0, 0x3f31);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00e0, 0xc000);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x0084, cfgparam1);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x008a, cfgparam2);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00e9, 0x9e50);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00f5, 0x1cf8);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00f4, 0xc020);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00f8, 0xb900);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00f9, 0x4e53);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x0081, 0x0080);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x0091, 0x9660);
+            PHY_CHECK_RET(status);
 
-        /* Write the magic registers to calibrate SQI */
-        status = PHY_WRITE_REG(0x1f, 0x00ad, cfgparam3);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00ae, cfgparam4);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00af, cfgparam5);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00b0, 0x0103);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00b1, 0x0910);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00b2, 0x1d26);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00b3, 0x002a);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00b4, 0x0103);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00b5, 0x070d);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00b6, 0x1720);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00b7, 0x0027);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00b8, 0x0509);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00b9, 0x0e13);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00ba, 0x1c25);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00bb, 0x002b);
-        PHY_CHECK_RET(status);
-    }
+            /* Even more magic maths for SQI */
+            cfgparam3 = (uint16_t) (((5 + offset1) & 0x3f) << 8) | (uint16_t) ((9 + offset1) & 0x3f);
+            cfgparam4 = (uint16_t) (((9 + offset1) & 0x3f) << 8) | (uint16_t) ((14 + offset1) & 0x3f);
+            cfgparam5 = (uint16_t) (((17 + offset1) & 0x3f) << 8) | (uint16_t) ((22 + offset1) & 0x3f);
 
-    /* Revision D0 and later - Configuration Process (AN1699 section 2.1 - DS60001699G) */
-    else if (dev->silicon_revision == PHY_LAN867X_SI_REV_D0) {
+            /* Write the magic registers to calibrate SQI */
+            status = PHY_WRITE_REG(0x1f, 0x00ad, cfgparam3);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00ae, cfgparam4);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00af, cfgparam5);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00b0, 0x0103);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00b1, 0x0910);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00b2, 0x1d26);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00b3, 0x002a);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00b4, 0x0103);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00b5, 0x070d);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00b6, 0x1720);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00b7, 0x0027);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00b8, 0x0509);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00b9, 0x0e13);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00ba, 0x1c25);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00bb, 0x002b);
+            PHY_CHECK_RET(status);
+            break;
 
-        /* Write magic config registers */
-        status = PHY_WRITE_REG(0x1f, 0x0037, 0x0800);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x008a, 0xbfc0);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x0118, 0x029c);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00d6, 0x1001);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x0082, 0x001c);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00fd, 0x0c0b);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x00fd, 0x8c07);
-        PHY_CHECK_RET(status);
-        status = PHY_WRITE_REG(0x1f, 0x0091, 0x9660);
-        PHY_CHECK_RET(status);
+        /* Other revisions use D0 config */
+        default:
+            PHY_LOG("Warning, unknown silicon revision '%d', applying D0 config (potentially unstable)", dev->silicon_revision);
 
-        /* Write to link status control register */
-        reg_data  = LAN867X_MISC_LSCTL_LSPSEL_DIS << LAN867X_MISC_LSCTL_LSPSEL_SHIFT;       /* Disable link state output to pin */
-        reg_data |= LAN867X_MISC_LSCTL_LSCFG_PLCA_STATUS << LAN867X_MISC_LSCTL_LSCFG_SHIFT; /* Link status is PLCA status */
-        reg_data |= LAN867X_MISC_LSCTL_LSTMR_15MS << LAN867X_MISC_LSCTL_LSTMR_SHIFT;        /* Default timeout 15ms */
-        status    = PHY_WRITE_REG(PHY_LAN867X_DEV_LSCTL_REV_D, PHY_LAN867X_REG_LSCTL_REV_D, reg_data);
-        PHY_CHECK_RET(status);
+        /* Revision D0 and later - Configuration Process (AN1699 section 2.1 - DS60001699G) */
+        case PHY_LAN867X_SI_REV_D0:
 
-        /* TODO: Enable SQI */
-    }
+            /* Write magic config registers */
+            status = PHY_WRITE_REG(0x1f, 0x0037, 0x0800);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x008a, 0xbfc0);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x0118, 0x029c);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00d6, 0x1001);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x0082, 0x001c);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00fd, 0x0c0b);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x00fd, 0x8c07);
+            PHY_CHECK_RET(status);
+            status = PHY_WRITE_REG(0x1f, 0x0091, 0x9660);
+            PHY_CHECK_RET(status);
 
-    /* Other revisions not implemented */
-    else {
-        status = PHY_NOT_IMPLEMENTED_ERROR;
-        PHY_LOG("Warning, unknown silicon revision '%d', potentially unstable", dev->silicon_revision);
+            /* Write to link status control register */
+            reg_data  = LAN867X_MISC_LSCTL_LSPSEL_DIS << LAN867X_MISC_LSCTL_LSPSEL_SHIFT;       /* Disable link state output to pin */
+            reg_data |= LAN867X_MISC_LSCTL_LSCFG_PLCA_STATUS << LAN867X_MISC_LSCTL_LSCFG_SHIFT; /* Link status is PLCA status */
+            reg_data |= LAN867X_MISC_LSCTL_LSTMR_15MS << LAN867X_MISC_LSCTL_LSTMR_SHIFT;        /* Default timeout 15ms */
+            status    = PHY_WRITE_REG(PHY_LAN867X_DEV_LSCTL_REV_D, PHY_LAN867X_REG_LSCTL_REV_D, reg_data);
+            PHY_CHECK_RET(status);
+
+            /* TODO: Enable SQI */
+
+            break;
+
+        /* Old versions with no configuration provided */
+        case PHY_LAN867X_SI_REV_B1:
+        case PHY_LAN867X_SI_REV_C1:
+            PHY_LOG("Warning, old silicon revision '%d', no config to apply (potentially unstable)", dev->silicon_revision);
     }
 
     return status;
@@ -201,9 +216,9 @@ phy_status_t PHY_LAN867X_Init(phy_handle_lan867x_t *dev, const phy_config_lan867
     if (callbacks->callback_write_log == NULL) status = PHY_PARAMETER_ERROR;
     PHY_CHECK_RET(status);
 
-    // TODO:
-    // - Check ID
-    // - Get silicon revision
+    /* Check the ID and get the silicon revision */
+    status = PHY_LAN867X_CheckID(dev);
+    PHY_CHECK_RET(status);
 
     /* Apply the arcane config and enable SQI monitoring */
     status = PHY_LAN867X_ApplyConfigEnableSQI(dev);
