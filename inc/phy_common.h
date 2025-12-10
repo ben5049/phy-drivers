@@ -118,6 +118,12 @@ typedef struct {
 } phy_callbacks_t;
 
 typedef struct {
+    atomic_int_fast32_t writes;
+    atomic_int_fast32_t reads;
+    atomic_int_fast32_t smi_errors;
+} phy_event_counters_base_t;
+
+typedef struct {
     phy_variant_t   variant;
     uint8_t         phy_addr;
     phy_interface_t interface;

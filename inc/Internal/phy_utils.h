@@ -23,7 +23,7 @@ extern "C" {
         if (status != PHY_OK) return status; \
     } while (0)
 
-#define PHY_CHECK_END                   \
+#define PHY_CHECK_END(status)           \
     do {                                \
         if (status != PHY_OK) goto end; \
     } while (0)
@@ -60,6 +60,11 @@ extern "C" {
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_config_type, phy_config_base_t, default_speed); \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_config_type, phy_config_base_t, default_role);  \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_config_type, phy_config_base_t, timeout);
+
+#define PHY_CHECK_EVENTS_MEMBERS(phy_events_type)                                          \
+    PHY_CHECK_MEMBER_COMPATIBILITY(phy_events_type, phy_event_counters_base_t, writes)     \
+    PHY_CHECK_MEMBER_COMPATIBILITY(phy_events_type, phy_event_counters_base_t, reads)      \
+    PHY_CHECK_MEMBER_COMPATIBILITY(phy_events_type, phy_event_counters_base_t, smi_errors)
 
 #define PHY_WRITE_REG(mmd_addr, reg_addr, data)                                                                                                           \
     ({                                                                                                                                                    \

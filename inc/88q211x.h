@@ -49,12 +49,17 @@ typedef enum {
 
 /* Stores information about driver events */
 typedef struct {
+
+    /* Common attributes */
     atomic_int_fast32_t writes;
     atomic_int_fast32_t reads;
     atomic_int_fast32_t smi_errors;
+
+    /* PHY Specific attributes */
     atomic_int_fast32_t crc_errors;
     atomic_int_fast32_t tx_faults;
     atomic_int_fast32_t rx_faults;
+
 } phy_event_counters_88q211x_t;
 
 typedef struct {

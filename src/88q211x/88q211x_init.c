@@ -151,6 +151,7 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
 
     PHY_CHECK_HANDLE_MEMBERS(phy_handle_88q211x_t);
     PHY_CHECK_CONFIG_MEMBERS(phy_config_88q211x_t);
+    PHY_CHECK_EVENTS_MEMBERS(phy_event_counters_88q211x_t);
 
     phy_status_t status   = PHY_OK;
     uint16_t     reg_data = 0;
@@ -212,11 +213,11 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
 
     /* Check the PHY ID */
     status = PHY_88Q211X_CheckID(dev);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
     /* Reset the copper circuits */
     status = PHY_88Q211X_SoftwareResetCopper(dev);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
     /* Configure interfaces */
     if (dev->config.interface == PHY_INTERFACE_RGMII) {
@@ -226,40 +227,40 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     } else {
         status = PHY_PARAMETER_ERROR;
     }
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
     /* Set the fifo size */
     status = PHY_88Q211X_SetFifoSize(dev);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
     /* Reset GMII steering (disable loopback, enable packet checker, disable packet generator) */
     status = PHY_88Q211X_ResetGMIISteering(dev);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
     /* Check speed & mode */
     status = PHY_READ_REG(PHY_88Q211X_DEV_BASE_T1_PMA_PMD_CTRL, PHY_88Q211X_REG_BASE_T1_PMA_PMD_CTRL, &reg_data);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
     dev->role  = (reg_data & PHY_88Q211X_MASTER) ? PHY_ROLE_MASTER : PHY_ROLE_SLAVE;
     dev->speed = (((reg_data & PHY_88Q211X_SPEED_MASK) >> PHY_88Q211X_SPEED_SHIFT) == PHY_88Q211X_SPEED_100M) ? PHY_SPEED_100M : PHY_SPEED_1G; /* TODO: Also check for invalid speed */
 
     /* Set the port role */
     if ((dev->role != dev->config.default_role) && (dev->config.default_role != PHY_ROLE_UNKNOWN)) {
         status = PHY_88Q211X_SetRole(dev, dev->config.default_role);
-        PHY_CHECK_END;
+        PHY_CHECK_END(status);
     }
 
     /* Set the port speed */
     if ((dev->speed != dev->config.default_speed) && (dev->config.default_speed != PHY_SPEED_UNKNOWN)) {
         status = PHY_88Q211X_SetSpeed(dev, dev->config.default_speed);
-        PHY_CHECK_END;
+        PHY_CHECK_END(status);
     }
 
     /* Enable polarity correction (for 100BASE-T1) */
     status = PHY_READ_REG(PHY_88Q211X_DEV_100BASE_T1_CU_CTRL, PHY_88Q211X_REG_100BASE_T1_CU_CTRL, &reg_data);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
     reg_data |= PHY_88Q211X_100BASE_T1_POL_CORRECTION;
     status    = PHY_WRITE_REG(PHY_88Q211X_DEV_100BASE_T1_CU_CTRL, PHY_88Q211X_REG_100BASE_T1_CU_CTRL, reg_data);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
     /* Move from unconfigured to IDLE */
     dev->state = PHY_STATE_88Q211X_IDLE;

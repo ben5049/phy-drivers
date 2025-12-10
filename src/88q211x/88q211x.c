@@ -20,19 +20,19 @@ phy_status_t PHY_88Q211X_EnableInterrupts(phy_handle_88q211x_t *dev) {
 
     /* Read the interrupt pin config register */
     status = PHY_READ_REG(PHY_88Q211X_DEV_LED_TIMER_CTRL, PHY_88Q211X_REG_LED_TIMER_CTRL, &reg_data);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
     /* Make sure the interrupt polarity is low and not forced on */
     if (!(reg_data & PHY_88Q211X_INT_POLARITY_LOW) || (reg_data & PHY_88Q211X_FORCE_INT)) {
         reg_data |= PHY_88Q211X_INT_POLARITY_LOW;
         reg_data &= ~PHY_88Q211X_FORCE_INT;
         status    = PHY_WRITE_REG(PHY_88Q211X_DEV_LED_TIMER_CTRL, PHY_88Q211X_REG_LED_TIMER_CTRL, reg_data);
-        PHY_CHECK_END;
+        PHY_CHECK_END(status);
     }
 
     /* Read the GPIO tri-state register */
     status = PHY_READ_REG(PHY_88Q211X_DEV_GPIO_TRI_STATE_CTRL, PHY_88Q211X_REG_GPIO_TRI_STATE_CTRL, &reg_data);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
     /* Disable tri-state mode on the interrupt pin and configure as open drain */
     if (!(reg_data & PHY_88Q211X_INT_DISABLE_TRI_STATE) ||
@@ -44,7 +44,7 @@ phy_status_t PHY_88Q211X_EnableInterrupts(phy_handle_88q211x_t *dev) {
         reg_data |= PHY_88Q211X_INT_OPEN_DRAIN;
 
         status = PHY_WRITE_REG(PHY_88Q211X_DEV_GPIO_TRI_STATE_CTRL, PHY_88Q211X_REG_GPIO_TRI_STATE_CTRL, reg_data);
-        PHY_CHECK_END;
+        PHY_CHECK_END(status);
     }
 
     /* Configure which general interrupts are enabled */
@@ -53,18 +53,18 @@ phy_status_t PHY_88Q211X_EnableInterrupts(phy_handle_88q211x_t *dev) {
     reg_data |= PHY_88Q211X_INT_PMT_LINK_DOWN;
     reg_data |= PHY_88Q211X_INT_100BASE_T1;
     status    = PHY_WRITE_REG(PHY_88Q211X_DEV_INT_EN_1, PHY_88Q211X_REG_INT_EN_1, reg_data);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
     /* Configure 100BASE-T1 specific interrupts. TODO: Enable error interrupts */
     // reg_data  = 0;
     // reg_data |= PHY_88Q211X_100BASE_T1_LINK_STATUS_CHANGE;
     // status = PHY_WRITE_REG(PHY_88Q211X_DEV_100BASE_T1_INT_EN_1, PHY_88Q211X_REG_100BASE_T1_INT_EN_1, reg_data);
-    // PHY_CHECK_END;
+    // PHY_CHECK_END(status);
 
     /* Configure 100BASE-T1 MAC specific interrupts. TODO: Enable error interrupts */
     // reg_data = 0;
     // status = PHY_WRITE_REG(PHY_88Q211X_DEV_MAC_INT_EN, PHY_88Q211X_REG_MAC_INT_EN, reg_data);
-    // PHY_CHECK_END;
+    // PHY_CHECK_END(status);
 
     /* TODO: Configure SGMII specific interrupts. TODO: Enable error interrupts */
 
@@ -94,31 +94,31 @@ phy_status_t PHY_88Q211X_ProcessInterrupt(phy_handle_88q211x_t *dev) {
 
     /* Get the interrupt status bits */
     status = PHY_READ_REG(PHY_88Q211X_DEV_GPIO_INT_STATUS, PHY_88Q211X_REG_GPIO_INT_STATUS, &reg_data);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
     /* Get the link up or down status */
     if ((reg_data & PHY_88Q211X_INT_PMT_LINK_UP) && !(reg_data & PHY_88Q211X_INT_PMT_LINK_DOWN)) {
         dev->linkup = true;
         status      = dev->callbacks->callback_link_status_change(true, dev->callback_context);
-        PHY_CHECK_END;
+        PHY_CHECK_END(status);
     } else if (!(reg_data & PHY_88Q211X_INT_PMT_LINK_UP) && (reg_data & PHY_88Q211X_INT_PMT_LINK_DOWN)) {
         dev->linkup = false;
         status      = dev->callbacks->callback_link_status_change(false, dev->callback_context);
-        PHY_CHECK_END;
+        PHY_CHECK_END(status);
     }
 
     /* If the link is both up and down then read the status registers to check which is true */
     else if ((reg_data & PHY_88Q211X_INT_PMT_LINK_UP) && (reg_data & PHY_88Q211X_INT_PMT_LINK_DOWN)) {
         status = PHY_88Q211X_GetLinkState(dev, NULL);
-        PHY_CHECK_END;
+        PHY_CHECK_END(status);
         status = dev->callbacks->callback_link_status_change(dev->linkup, dev->callback_context);
-        PHY_CHECK_END;
+        PHY_CHECK_END(status);
     }
 
     /* Unknown interrupt */
     else {
         status = PHY_UNKNOWN_INTERRUPT_ERROR;
-        PHY_CHECK_END;
+        PHY_CHECK_END(status);
     }
 
 end:
@@ -147,7 +147,7 @@ phy_status_t PHY_88Q211X_GetLinkState(phy_handle_88q211x_t *dev, bool *linkup) {
 
         /* Read the status register */
         status = PHY_READ_REG(PHY_88Q211X_DEV_100BASE_T1_STATUS_2, PHY_88Q211X_REG_100BASE_T1_STATUS_2, &reg_data);
-        PHY_CHECK_END;
+        PHY_CHECK_END(status);
 
         /* Extract the link status bit */
         linkup_internal = (bool) (reg_data & PHY_88Q211X_100BASE_T1_LINK_STATUS);
@@ -156,7 +156,7 @@ phy_status_t PHY_88Q211X_GetLinkState(phy_handle_88q211x_t *dev, bool *linkup) {
 
         /* Read the status register */
         status = PHY_READ_REG(PHY_88Q211X_DEV_PCS_1000BASE_T1_STATUS_1, PHY_88Q211X_REG_PCS_1000BASE_T1_STATUS_1, &reg_data);
-        PHY_CHECK_END;
+        PHY_CHECK_END(status);
 
         /* Extract the link status bit */
         linkup_internal = (bool) (reg_data & PHY_88Q211X_100BASE_T1_LINK_STATUS);
@@ -169,7 +169,7 @@ phy_status_t PHY_88Q211X_GetLinkState(phy_handle_88q211x_t *dev, bool *linkup) {
     /* If there is a change then call the corresponding callback */
     if (dev->linkup != linkup_internal) {
         status = dev->callbacks->callback_link_status_change(linkup_internal, dev->callback_context);
-        PHY_CHECK_END;
+        PHY_CHECK_END(status);
     }
 
     /* Update the device struct */
@@ -199,7 +199,7 @@ phy_status_t PHY_88Q211X_EnableTransmit(phy_handle_88q211x_t *dev) {
 
     /* Read the BASE-T1 control register */
     status = PHY_READ_REG(PHY_88Q211X_DEV_BASE_T1_CTRL, PHY_88Q211X_REG_BASE_T1_CTRL, &reg_data);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
     /* If transmit is already enabled then return */
     if (!(reg_data & PHY_88Q211X_PMA_TRANSMIT_DISABLE)) goto end;
@@ -207,7 +207,7 @@ phy_status_t PHY_88Q211X_EnableTransmit(phy_handle_88q211x_t *dev) {
     /* Otherwise set the transmit disable bit to 0 */
     reg_data &= ~PHY_88Q211X_PMA_TRANSMIT_DISABLE;
     status    = PHY_WRITE_REG(PHY_88Q211X_DEV_BASE_T1_CTRL, PHY_88Q211X_REG_BASE_T1_CTRL, reg_data);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
 end:
     PHY_UNLOCK;
@@ -224,7 +224,7 @@ phy_status_t PHY_88Q211X_DisableTransmit(phy_handle_88q211x_t *dev) {
 
     /* Read the BASE-T1 control register */
     status = PHY_READ_REG(PHY_88Q211X_DEV_BASE_T1_CTRL, PHY_88Q211X_REG_BASE_T1_CTRL, &reg_data);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
     /* If transmit is already disabled then return */
     if (reg_data & PHY_88Q211X_PMA_TRANSMIT_DISABLE) goto end;
@@ -232,7 +232,7 @@ phy_status_t PHY_88Q211X_DisableTransmit(phy_handle_88q211x_t *dev) {
     /* Otherwise set the transmit disable bit to 1 */
     reg_data |= PHY_88Q211X_PMA_TRANSMIT_DISABLE;
     status    = PHY_WRITE_REG(PHY_88Q211X_DEV_BASE_T1_CTRL, PHY_88Q211X_REG_BASE_T1_CTRL, reg_data);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
 end:
     PHY_UNLOCK;
@@ -250,7 +250,7 @@ phy_status_t PHY_88Q211X_SetSpeed(phy_handle_88q211x_t *dev, phy_speed_t speed) 
 
     /* Get current speed */
     status = PHY_READ_REG(PHY_88Q211X_DEV_BASE_T1_PMA_PMD_CTRL, PHY_88Q211X_REG_BASE_T1_PMA_PMD_CTRL, &old_reg_data);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
     /* Modify the register value */
     new_reg_data  = old_reg_data;
@@ -267,7 +267,7 @@ phy_status_t PHY_88Q211X_SetSpeed(phy_handle_88q211x_t *dev, phy_speed_t speed) 
     /* Send the new register value if it has changed */
     if (new_reg_data != old_reg_data) {
         status = PHY_WRITE_REG(PHY_88Q211X_DEV_BASE_T1_PMA_PMD_CTRL, PHY_88Q211X_REG_BASE_T1_PMA_PMD_CTRL, new_reg_data);
-        PHY_CHECK_END;
+        PHY_CHECK_END(status);
     }
 
     /* Update the device struct */
@@ -288,7 +288,7 @@ phy_status_t PHY_88Q211X_GetSpeed(phy_handle_88q211x_t *dev, phy_speed_t *speed)
 
     /* Get current speed */
     status = PHY_READ_REG(PHY_88Q211X_DEV_BASE_T1_PMA_PMD_CTRL, PHY_88Q211X_REG_BASE_T1_PMA_PMD_CTRL, &reg_data);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
     /* Set the speed */
     switch ((reg_data & PHY_88Q211X_SPEED_MASK) >> PHY_88Q211X_SPEED_SHIFT) {
@@ -304,7 +304,7 @@ phy_status_t PHY_88Q211X_GetSpeed(phy_handle_88q211x_t *dev, phy_speed_t *speed)
             status = PHY_INVALID_REGISTER_CONTENT_ERROR;
             break;
     }
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
     /* Write the output */
     if (speed != NULL) *speed = dev->speed;
@@ -336,7 +336,7 @@ phy_status_t PHY_88Q211X_SetRole(phy_handle_88q211x_t *dev, phy_role_t role) {
 
     /* Get current speed */
     status = PHY_READ_REG(PHY_88Q211X_DEV_BASE_T1_PMA_PMD_CTRL, PHY_88Q211X_REG_BASE_T1_PMA_PMD_CTRL, &old_reg_data);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
     /* Modify the register value */
     new_reg_data = old_reg_data;
@@ -352,7 +352,7 @@ phy_status_t PHY_88Q211X_SetRole(phy_handle_88q211x_t *dev, phy_role_t role) {
     /* Send the new register value if it has changed */
     if (new_reg_data != old_reg_data) {
         status = PHY_WRITE_REG(PHY_88Q211X_DEV_BASE_T1_PMA_PMD_CTRL, PHY_88Q211X_REG_BASE_T1_PMA_PMD_CTRL, new_reg_data);
-        PHY_CHECK_END;
+        PHY_CHECK_END(status);
     }
 
     /* Update the device struct */
@@ -373,7 +373,7 @@ phy_status_t PHY_88Q211X_GetRole(phy_handle_88q211x_t *dev, phy_role_t *role) {
 
     /* Get current role */
     status = PHY_READ_REG(PHY_88Q211X_DEV_BASE_T1_PMA_PMD_CTRL, PHY_88Q211X_REG_BASE_T1_PMA_PMD_CTRL, &reg_data);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
     /* Set the role */
     if (reg_data & PHY_88Q211X_MASTER) {
@@ -403,14 +403,14 @@ phy_status_t PHY_88Q211X_EnableTemperatureSensor(phy_handle_88q211x_t *dev) {
 
         /* Read the temperature sensor control register */
         status = PHY_READ_REG(PHY_88Q211X_DEV_TEMP_3, PHY_88Q211X_REG_TEMP_3, &reg_data);
-        PHY_CHECK_END;
+        PHY_CHECK_END(status);
 
         /* If the sensor isn't configured in 1Hz mode then configure it */
         if (((reg_data & PHY_88Q211X_TEMPERATURE_SENSOR_EN_MASK) >> PHY_88Q211X_TEMPERATURE_SENSOR_EN_SHIFT) != PHY_88Q211X_TEMPERATURE_SENSOR_1HZ) {
             reg_data &= ~PHY_88Q211X_TEMPERATURE_SENSOR_EN_MASK;
             reg_data |= ((uint16_t) PHY_88Q211X_TEMPERATURE_SENSOR_1HZ << PHY_88Q211X_TEMPERATURE_SENSOR_EN_SHIFT) & PHY_88Q211X_TEMPERATURE_SENSOR_EN_MASK;
             status    = PHY_WRITE_REG(PHY_88Q211X_DEV_TEMP_3, PHY_88Q211X_REG_TEMP_3, reg_data);
-            PHY_CHECK_END;
+            PHY_CHECK_END(status);
         }
 
         dev->temp_sensor_enabled = true;
@@ -436,7 +436,7 @@ phy_status_t PHY_88Q211X_ReadTemperature(phy_handle_88q211x_t *dev, float *temp,
 
         /* Read the temperature register */
         status = PHY_READ_REG(PHY_88Q211X_DEV_TEMP_4, PHY_88Q211X_REG_TEMP_4, &reg_data);
-        PHY_CHECK_END;
+        PHY_CHECK_END(status);
 
         /* Convert the temperature to degrees */
         *temp  = (float) (((int16_t) ((reg_data & PHY_88Q211X_TEMPERATURE_MASK) >> PHY_88Q211X_TEMPERATURE_SHIFT)) - 75);
@@ -469,7 +469,7 @@ phy_status_t PHY_88Q211X_CheckFaults(phy_handle_88q211x_t *dev, phy_fault_t *fau
 
         /* Read the PCS status register */
         status = PHY_READ_REG(PHY_88Q211X_DEV_PCS_STATUS_2, PHY_88Q211X_REG_PCS_STATUS_2, &reg_data);
-        PHY_CHECK_END;
+        PHY_CHECK_END(status);
 
         /* Check for PCS RX faults */
         if (reg_data & PHY_88Q211X_PCS_RX_FAULT) {
@@ -494,7 +494,7 @@ phy_status_t PHY_88Q211X_CheckFaults(phy_handle_88q211x_t *dev, phy_fault_t *fau
 
             /* Read the 1000BASE-T1 PCS Status register */
             status = PHY_READ_REG(PHY_88Q211X_DEV_PCS_1000BASE_T1_STATUS_1, PHY_88Q211X_REG_PCS_1000BASE_T1_STATUS_1, &reg_data);
-            PHY_CHECK_END;
+            PHY_CHECK_END(status);
             // if (!(reg_data & PHY_88Q211X_1000BASE_T1_FAULT)) {
             // }
 
@@ -503,7 +503,7 @@ phy_status_t PHY_88Q211X_CheckFaults(phy_handle_88q211x_t *dev, phy_fault_t *fau
 
                 /* Check the FEC status register */
                 status = PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T_PCS_STATUS_2, PHY_88Q211X_REG_1000BASE_T_PCS_STATUS_2, &reg_data);
-                PHY_CHECK_END;
+                PHY_CHECK_END(status);
 
                 /* If a high BER has been detected then report it */
                 if (reg_data & PHY_88Q211X_HIGH_BER) {
@@ -522,7 +522,7 @@ phy_status_t PHY_88Q211X_CheckFaults(phy_handle_88q211x_t *dev, phy_fault_t *fau
 
     /* Get the packet CRC error count and clear the packet checker counter */
     status = PHY_88Q211X_ReadPacketCheckerCounters(dev, NULL, &errors, true);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
     dev->events.crc_errors += errors;
 
     /* If an error has occured change the status to reflect it */
@@ -545,13 +545,13 @@ phy_status_t PHY_88Q211X_EnableIEEEPowerDown(phy_handle_88q211x_t *dev) {
 
     /* Read the BASE-T1 control register */
     status = PHY_READ_REG(PHY_88Q211X_DEV_BASE_T1_CTRL, PHY_88Q211X_REG_BASE_T1_CTRL, &reg_data);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
     /* If not powered down the set the low power bit */
     if (!(reg_data & PHY_88Q211X_IEEE_POWER_DOWN)) {
         reg_data |= PHY_88Q211X_IEEE_POWER_DOWN;
         status    = PHY_WRITE_REG(PHY_88Q211X_DEV_BASE_T1_CTRL, PHY_88Q211X_REG_BASE_T1_CTRL, reg_data);
-        PHY_CHECK_END;
+        PHY_CHECK_END(status);
     }
 
     /* Update the device struct */
@@ -573,24 +573,24 @@ phy_status_t PHY_88Q211X_DisableIEEEPowerDown(phy_handle_88q211x_t *dev) {
 
     /* Read the BASE-T1 control register */
     status = PHY_READ_REG(PHY_88Q211X_DEV_BASE_T1_CTRL, PHY_88Q211X_REG_BASE_T1_CTRL, &reg_data);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
     /* If powered down the clear the low power bit */
     if (reg_data & PHY_88Q211X_IEEE_POWER_DOWN) {
         reg_data &= ~PHY_88Q211X_IEEE_POWER_DOWN;
         status    = PHY_WRITE_REG(PHY_88Q211X_DEV_BASE_T1_CTRL, PHY_88Q211X_REG_BASE_T1_CTRL, reg_data);
-        PHY_CHECK_END;
+        PHY_CHECK_END(status);
     }
 
     /* Read the PCS control register 1 */
     status = PHY_READ_REG(PHY_88Q211X_DEV_PCS_CTRL_1, PHY_88Q211X_REG_PCS_CTRL_1, &reg_data);
-    PHY_CHECK_END;
+    PHY_CHECK_END(status);
 
     /* If powered down the clear the low power bit */
     if (reg_data & PHY_88Q211X_IEEE_POWER_DOWN) {
         reg_data &= ~PHY_88Q211X_IEEE_POWER_DOWN;
         status    = PHY_WRITE_REG(PHY_88Q211X_DEV_PCS_CTRL_1, PHY_88Q211X_REG_PCS_CTRL_1, reg_data);
-        PHY_CHECK_END;
+        PHY_CHECK_END(status);
     }
 
     /* Update the device struct */

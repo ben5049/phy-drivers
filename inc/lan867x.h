@@ -31,16 +31,27 @@ extern "C" {
 #define PHY_LAN867X_MMDCTRL_DEVAD_SHIFT      (0)
 #define PHY_LAN867X_MMDCTRL_DEVAD_MASK       (0x1f << PHY_LAN867X_MMDCTRL_DEVAD_SHIFT)
 
+#define PHY_LAN867X_OUI                      0x0f8000
+#define PHY_LAN867X_MODEL_NUMBER             0b010110
 
 /* Stores information about driver events */
 typedef struct {
+
+    /* Common attributes */
     atomic_int_fast32_t writes;
     atomic_int_fast32_t reads;
     atomic_int_fast32_t smi_errors;
+
+    /* PHY Specific attributes */
+    atomic_int_fast32_t mdi_errors;
+    atomic_int_fast32_t plca_errors;
+    atomic_int_fast32_t env_errors; /* Environmental errors: temperature and unstable voltage */
+
 } phy_event_counters_lan867x_t;
 
 /* Silicon revision of the chip */
 typedef enum {
+    PHY_LAN867X_SI_REV_A0 = 0b0000,
     PHY_LAN867X_SI_REV_B1 = 0b0010,
     PHY_LAN867X_SI_REV_C1 = 0b0100,
     PHY_LAN867X_SI_REV_C2 = 0b0101,
@@ -80,11 +91,17 @@ typedef struct {
     phy_config_lan867x_t         config;
     phy_event_counters_lan867x_t events;
     phy_si_rev_lan867x_t         silicon_revision;
+    bool                         write_enabled;
 
 } phy_handle_lan867x_t;
 
 
 phy_status_t PHY_LAN867X_Init(phy_handle_lan867x_t *dev, const phy_config_lan867x_t *config, const phy_callbacks_t *callbacks, void *callback_context);
+
+phy_status_t PHY_LAN867X_ProcessInterrupt(phy_handle_lan867x_t *dev);
+
+phy_status_t PHY_LAN867X_EnableIEEEPowerDown(phy_handle_lan867x_t *dev);
+phy_status_t PHY_LAN867X_DisableIEEEPowerDown(phy_handle_lan867x_t *dev);
 
 
 #ifdef __cplusplus

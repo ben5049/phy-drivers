@@ -7,6 +7,7 @@
 
 #include "lan867x.h"
 #include "internal/phy_utils.h"
+#include "internal/lan867x/lan867x_init.h"
 #include "internal/lan867x/lan867x_regs.h"
 
 
@@ -28,11 +29,51 @@ static phy_status_t PHY_LAN867X_IndirectRead(phy_handle_lan867x_t *dev, uint8_t 
     return status;
 }
 
-static phy_status_t PHY_LAN867X_CheckID(phy_handle_lan867x_t *dev){
-    phy_status_t status = PHY_NOT_IMPLEMENTED_ERROR;
-    uint16_t     reg_data;
+static phy_status_t PHY_LAN867X_CheckID(phy_handle_lan867x_t *dev) {
 
-    // TODO:
+    phy_status_t status   = PHY_OK;
+    uint16_t     reg_data = 0;
+    uint32_t     oui      = 0;
+    uint8_t      model    = 0;
+
+    /* Read the first ID register */
+    status = PHY_READ_REG(PHY_LAN867X_DEV_PHY_ID1, PHY_LAN867X_REG_PHY_ID1, &reg_data);
+    PHY_CHECK_RET(status);
+
+    /* Get bits 2:17 of the organisationally unique identifier */
+    oui |= (uint32_t) reg_data << 6;
+
+    /* Read the second ID register */
+    status = PHY_READ_REG(PHY_LAN867X_DEV_PHY_ID2, PHY_LAN867X_REG_PHY_ID2, &reg_data);
+    PHY_CHECK_RET(status);
+
+    /* Get bits 18:23 of the organisationally unique identifier and check it is correct */
+    oui |= ((reg_data & PHY_LAN867X_OUI_18_23_MASK) >> PHY_LAN867X_OUI_18_23_SHIFT);
+    if (oui != PHY_LAN867X_OUI) status = PHY_ID_ERROR;
+    PHY_CHECK_RET(status);
+
+    /* Get the model number and check it is correct */
+    model = (reg_data & PHY_LAN867X_MODEL_MASK) >> PHY_LAN867X_MODEL_SHIFT;
+    if (model != PHY_LAN867X_MODEL_NUMBER) status = PHY_ID_ERROR;
+    PHY_CHECK_RET(status);
+
+    /* Get the revision and check it is correct */
+    dev->silicon_revision = (reg_data & PHY_LAN867X_REV_MASK) >> PHY_LAN867X_REV_SHIFT;
+    if ((dev->silicon_revision == PHY_LAN867X_SI_REV_D0) && (dev->config.variant == PHY_VARIANT_LAN8672)) status = PHY_ID_ERROR;
+    PHY_CHECK_RET(status);
+
+    return status;
+}
+
+static phy_status_t PHY_LAN867X_SoftwareReset(phy_handle_lan867x_t *dev) {
+
+    phy_status_t status = PHY_OK;
+
+    status = PHY_WRITE_REG(PHY_LAN867X_DEV_BASIC_CONTROL, PHY_LAN867X_REG_BASIC_CONTROL, PHY_LAN867X_SW_RESET);
+    PHY_CHECK_RET(status);
+
+    LAN867X_CLEAR_STATE(dev);
+
     return status;
 }
 
@@ -174,6 +215,7 @@ static phy_status_t PHY_LAN867X_ApplyConfigEnableSQI(phy_handle_lan867x_t *dev) 
             break;
 
         /* Old versions with no configuration provided */
+        case PHY_LAN867X_SI_REV_A0:
         case PHY_LAN867X_SI_REV_B1:
         case PHY_LAN867X_SI_REV_C1:
             PHY_LOG("Warning, old silicon revision '%d', no config to apply (potentially unstable)", dev->silicon_revision);
@@ -187,6 +229,9 @@ static phy_status_t PHY_LAN867X_PLCAEnable(phy_handle_lan867x_t *dev) {
 
     phy_status_t status = PHY_NOT_IMPLEMENTED_ERROR;
 
+
+    // TODO: disabling collision detection is recommended
+
     return status;
 }
 
@@ -194,6 +239,7 @@ phy_status_t PHY_LAN867X_Init(phy_handle_lan867x_t *dev, const phy_config_lan867
 
     PHY_CHECK_HANDLE_MEMBERS(phy_handle_lan867x_t);
     PHY_CHECK_CONFIG_MEMBERS(phy_config_lan867x_t);
+    PHY_CHECK_EVENTS_MEMBERS(phy_event_counters_lan867x_t);
 
     phy_status_t status = PHY_NOT_IMPLEMENTED_ERROR; // TODO: change to PHY_OK when done
 
@@ -216,8 +262,18 @@ phy_status_t PHY_LAN867X_Init(phy_handle_lan867x_t *dev, const phy_config_lan867
     if (callbacks->callback_write_log == NULL) status = PHY_PARAMETER_ERROR;
     PHY_CHECK_RET(status);
 
+    /* Set fixed attributes */
+    dev->speed   = PHY_SPEED_10M;
+    dev->duplex  = PHY_HALF_DUPLEX;
+    dev->autoneg = false;
+    dev->role    = PHY_ROLE_UNKNOWN;
+
     /* Check the ID and get the silicon revision */
     status = PHY_LAN867X_CheckID(dev);
+    PHY_CHECK_RET(status);
+
+    /* Perform a software reset */
+    status = PHY_LAN867X_SoftwareReset(dev);
     PHY_CHECK_RET(status);
 
     /* Apply the arcane config and enable SQI monitoring */

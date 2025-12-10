@@ -40,6 +40,16 @@ enum phy_lan867x_basic_dev_e {
     PHY_LAN867X_DEV_STRAP_CTRL0   = 0x00
 };
 
+#define PHY_LAN867X_SW_RESET        (1 << 15)
+#define PHY_LAN867X_PD              (1 << 11) /* Power down the PMA */
+
+#define PHY_LAN867X_OUI_18_23_SHIFT (10)
+#define PHY_LAN867X_OUI_18_23_MASK  (0x3f << PHY_LAN867X_OUI_18_23_SHIFT)
+#define PHY_LAN867X_MODEL_SHIFT     (4)
+#define PHY_LAN867X_MODEL_MASK      (0x3f << PHY_LAN867X_MODEL_SHIFT)
+#define PHY_LAN867X_REV_SHIFT       (0)
+#define PHY_LAN867X_REV_MASK        (0xf << PHY_LAN867X_REV_SHIFT)
+
 /* ---------------------------------------------------------------------------- */
 /* Miscellaneous Registers */
 /* ---------------------------------------------------------------------------- */
@@ -260,6 +270,27 @@ enum phy_lan867x_misc_dev_e {
 #define LAN867X_MISC_LSCTL_LSTMR_1000MS      (3)
 
 #define LAN867X_MISC_LSCTL_LSSEM             (0x0001)
+
+#define LAN867X_MISC_SQI                     (1 << 12)
+#define LAN867X_MISC_PSTC                    (1 << 11)
+#define LAN867X_MISC_TXCOL                   (1 << 10)
+#define LAN867X_MISC_TXJAB                   (1 << 9)
+#define LAN867X_MISC_TSSI                    (1 << 8)
+#define LAN867X_MISC_EMPTYC                  (1 << 7)
+#define LAN867X_MISC_RXINTO                  (1 << 6)
+#define LAN867X_MISC_UNEXPB                  (1 << 5)
+#define LAN867X_MISC_BCNBFTO                 (1 << 4)
+#define LAN867X_MISC_UNCRS                   (1 << 3)
+#define LAN867X_MISC_PLCASYM                 (1 << 2)
+#define LAN867X_MISC_ESDERR                  (1 << 1)
+#define LAN867X_MISC_DEC5B                   (1 << 0)
+
+#define LAN867X_MISC_RESETC                  (1 << 11)
+#define LAN867X_MISC_WKEMDI                  (1 << 10)
+#define LAN867X_MISC_WKEWI                   (1 << 9)
+#define LAN867X_MISC_UV33                    (1 << 8)
+#define LAN867X_MISC_OT                      (1 << 6)
+#define LAN867X_MISC_IWDTO                   (1 << 5)
 
 #define LAN867X_MISC_IR_MODE                 (0x0002)
 
