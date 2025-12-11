@@ -51,6 +51,28 @@ enum phy_lan867x_basic_dev_e {
 #define PHY_LAN867X_REV_MASK        (0xf << PHY_LAN867X_REV_SHIFT)
 
 /* ---------------------------------------------------------------------------- */
+/* PMA/PMD Registers */
+/* ---------------------------------------------------------------------------- */
+
+enum phy_lan867x_pma_reg_e {
+    PHY_LAN867X_REG_PMA_T1PMAPMDEXTA = 0x0012,
+    PHY_LAN867X_REG_PMA_T1PMAPMDCTL  = 0x0834,
+    PHY_LAN867X_REG_PMA_T1SPMACTL    = 0x0879,
+    PHY_LAN867X_REG_PMA_T1SPMASTS    = 0x08fa,
+    PHY_LAN867X_REG_PMA_T1STSTCTL    = 0x08fb,
+};
+
+enum phy_lan867x_pma_dev_e {
+    PHY_LAN867X_DEV_PMA_T1PMAPMDEXTA = 0x01,
+    PHY_LAN867X_DEV_PMA_T1PMAPMDCTL  = 0x01,
+    PHY_LAN867X_DEV_PMA_T1SPMACTL    = 0x01,
+    PHY_LAN867X_DEV_PMA_T1SPMASTS    = 0x01,
+    PHY_LAN867X_DEV_PMA_T1STSTCTL    = 0x01,
+};
+
+#define PHY_LAN867X_MDE (1 << 10) /* Multidrop Enable */
+
+/* ---------------------------------------------------------------------------- */
 /* Miscellaneous Registers */
 /* ---------------------------------------------------------------------------- */
 

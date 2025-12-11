@@ -69,9 +69,9 @@ typedef struct {
     uint32_t        timeout;
 
     /* PHY Specific attributes */
-    bool    plca_enabled; /* Should usually be enabled */
-    uint8_t plca_id;      /* 0 = PLCA coordinator, 1 to 0xfe = PLCA follower */
-    uint8_t plca_nodes;   /* The number of PLCA transmit opportunities. Only valid if plca_id = 0 */
+    bool    plca_enabled;    /* Should usually be enabled */
+    uint8_t plca_id;         /* 0 = PLCA coordinator, 1 to 0xfe = PLCA follower */
+    uint8_t plca_node_count; /* The number of PLCA transmit opportunities. Only valid if plca_id = 0 */
 
 } phy_config_lan867x_t;
 

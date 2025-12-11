@@ -221,6 +221,15 @@ static phy_status_t PHY_LAN867X_ApplyConfigEnableSQI(phy_handle_lan867x_t *dev) 
             PHY_LOG("Warning, old silicon revision '%d', no config to apply (potentially unstable)", dev->silicon_revision);
     }
 
+    /* Enable multidrop (newer revisions turn it on by default) */
+    if (dev->silicon_revision < PHY_LAN867X_SI_REV_D0) {
+        status = PHY_READ_REG(PHY_LAN867X_DEV_PMA_T1SPMACTL, PHY_LAN867X_REG_PMA_T1SPMACTL, &reg_data);
+        PHY_CHECK_RET(status);
+        reg_data |= PHY_LAN867X_MDE;
+        status    = PHY_WRITE_REG(PHY_LAN867X_DEV_PMA_T1SPMACTL, PHY_LAN867X_REG_PMA_T1SPMACTL, reg_data);
+        PHY_CHECK_RET(status);
+    }
+
     return status;
 }
 
@@ -247,7 +256,7 @@ phy_status_t PHY_LAN867X_Init(phy_handle_lan867x_t *dev, const phy_config_lan867
     if ((config->variant == PHY_VARIANT_LAN8670) && (config->interface != PHY_INTERFACE_MII) && (config->interface != PHY_INTERFACE_RMII)) status = PHY_PARAMETER_ERROR;
     if ((config->variant == PHY_VARIANT_LAN8671) && (config->interface != PHY_INTERFACE_RMII)) status = PHY_PARAMETER_ERROR;
     if ((config->variant == PHY_VARIANT_LAN8672) && (config->interface != PHY_INTERFACE_MII)) status = PHY_PARAMETER_ERROR;
-    if (config->plca_enabled && (config->plca_id == 0) && (config->plca_nodes == 0)) status = PHY_PARAMETER_ERROR; /* There must be at least on transmit opportunity */
+    if (config->plca_enabled && (config->plca_id == 0) && (config->plca_node_count == 0)) status = PHY_PARAMETER_ERROR; /* There must be at least on transmit opportunity */
     PHY_CHECK_RET(status);
 
     /* Check the callbacks */
