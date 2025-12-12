@@ -29,6 +29,9 @@ extern "C" {
 #define PHY_LOGGING_ENABLED (1)
 #endif
 
+#define PHY_PLCA_COORDINATOR_ID     (0)
+#define PHY_PLCA_DEFAULT_NODE_COUNT (16) /* Default maximum number of devices on a multidrop bus. Must be the same for all devices. */
+
 
 typedef enum {
     PHY_OK      = 0,
@@ -95,6 +98,11 @@ typedef enum {
     PHY_ROLE_INVALID = 0x3
 } phy_role_t;
 
+typedef enum {
+    PHY_EVENT_LINK_UP,
+    PHY_EVENT_LINK_DOWN,
+} phy_event_t;
+
 typedef phy_status_t (*phy_callback_read_reg_t)(uint8_t phy_addr, uint8_t mmd_addr, uint16_t reg_addr, uint16_t *data, uint32_t timeout, void *context);
 typedef phy_status_t (*phy_callback_write_reg_t)(uint8_t phy_addr, uint8_t mmd_addr, uint16_t reg_addr, uint16_t data, uint32_t timeout, void *context);
 typedef uint32_t (*phy_callback_get_time_ms_t)(void *context);
@@ -102,19 +110,19 @@ typedef void (*phy_callback_delay_ms_t)(uint32_t ms, void *context);
 typedef void (*phy_callback_delay_ns_t)(uint32_t ns, void *context);
 typedef phy_status_t (*phy_callback_take_mutex_t)(uint32_t timeout, void *context);
 typedef phy_status_t (*phy_callback_give_mutex_t)(void *context);
-typedef phy_status_t (*phy_callback_link_status_change_t)(bool linkup, void *context);
+typedef phy_status_t (*phy_callback_event_t)(phy_event_t event, void *context);
 typedef void (*phy_callback_write_log_t)(const char *format, ...);
 
 typedef struct {
-    phy_callback_read_reg_t           callback_read_reg;           /* Read from a register */
-    phy_callback_write_reg_t          callback_write_reg;          /* Write to a register */
-    phy_callback_get_time_ms_t        callback_get_time_ms;        /* Get time in ms */
-    phy_callback_delay_ms_t           callback_delay_ms;           /* Non-blocking delay in ms */
-    phy_callback_delay_ns_t           callback_delay_ns;           /* Blocking delay in ns */
-    phy_callback_take_mutex_t         callback_take_mutex;         /* Take the mutex protecting the device */
-    phy_callback_give_mutex_t         callback_give_mutex;         /* Give the mutex protecting the device */
-    phy_callback_link_status_change_t callback_link_status_change; /* Called when the process interrupt function detects a link status change */
-    phy_callback_write_log_t          callback_write_log;          /* Write a log message */
+    phy_callback_read_reg_t    callback_read_reg;    /* Read from a register */
+    phy_callback_write_reg_t   callback_write_reg;   /* Write to a register */
+    phy_callback_get_time_ms_t callback_get_time_ms; /* Get time in ms */
+    phy_callback_delay_ms_t    callback_delay_ms;    /* Non-blocking delay in ms */
+    phy_callback_delay_ns_t    callback_delay_ns;    /* Blocking delay in ns */
+    phy_callback_take_mutex_t  callback_take_mutex;  /* Take the mutex protecting the device */
+    phy_callback_give_mutex_t  callback_give_mutex;  /* Give the mutex protecting the device */
+    phy_callback_event_t       callback_event;       /* Called when an event occurs like link up/down, for optional user processing */
+    phy_callback_write_log_t   callback_write_log;   /* Write a log message */
 } phy_callbacks_t;
 
 typedef struct {

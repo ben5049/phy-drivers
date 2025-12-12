@@ -3,6 +3,9 @@
  *
  *  Created on: Dec 9, 2025
  *      Author: bens1
+ *
+ * Platform specific examples of MDIO access functions.
+ *
  */
 
 #ifndef INC_PHY_MDIO_H_

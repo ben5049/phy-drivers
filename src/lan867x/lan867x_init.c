@@ -267,7 +267,7 @@ phy_status_t PHY_LAN867X_Init(phy_handle_lan867x_t *dev, const phy_config_lan867
     if (callbacks->callback_delay_ns == NULL) status = PHY_PARAMETER_ERROR;
     if (callbacks->callback_take_mutex == NULL) status = PHY_PARAMETER_ERROR;
     if (callbacks->callback_give_mutex == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_link_status_change == NULL) status = PHY_PARAMETER_ERROR;
+    if (callbacks->callback_event == NULL) status = PHY_PARAMETER_ERROR;
     if (callbacks->callback_write_log == NULL) status = PHY_PARAMETER_ERROR;
     PHY_CHECK_RET(status);
 

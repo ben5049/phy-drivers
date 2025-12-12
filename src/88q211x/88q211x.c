@@ -99,19 +99,17 @@ phy_status_t PHY_88Q211X_ProcessInterrupt(phy_handle_88q211x_t *dev) {
     /* Get the link up or down status */
     if ((reg_data & PHY_88Q211X_INT_PMT_LINK_UP) && !(reg_data & PHY_88Q211X_INT_PMT_LINK_DOWN)) {
         dev->linkup = true;
-        status      = dev->callbacks->callback_link_status_change(true, dev->callback_context);
+        status      = dev->callbacks->callback_event(PHY_EVENT_LINK_UP, dev->callback_context);
         PHY_CHECK_END(status);
     } else if (!(reg_data & PHY_88Q211X_INT_PMT_LINK_UP) && (reg_data & PHY_88Q211X_INT_PMT_LINK_DOWN)) {
         dev->linkup = false;
-        status      = dev->callbacks->callback_link_status_change(false, dev->callback_context);
+        status      = dev->callbacks->callback_event(PHY_EVENT_LINK_DOWN, dev->callback_context);
         PHY_CHECK_END(status);
     }
 
     /* If the link is both up and down then read the status registers to check which is true */
     else if ((reg_data & PHY_88Q211X_INT_PMT_LINK_UP) && (reg_data & PHY_88Q211X_INT_PMT_LINK_DOWN)) {
-        status = PHY_88Q211X_GetLinkState(dev, NULL);
-        PHY_CHECK_END(status);
-        status = dev->callbacks->callback_link_status_change(dev->linkup, dev->callback_context);
+        status = PHY_88Q211X_GetLinkState(dev, NULL); /* This calls dev->callback_event(PHY_EVENT_LINK_xxxx, ...) */
         PHY_CHECK_END(status);
     }
 
@@ -168,7 +166,7 @@ phy_status_t PHY_88Q211X_GetLinkState(phy_handle_88q211x_t *dev, bool *linkup) {
 
     /* If there is a change then call the corresponding callback */
     if (dev->linkup != linkup_internal) {
-        status = dev->callbacks->callback_link_status_change(linkup_internal, dev->callback_context);
+        status = dev->callbacks->callback_event(linkup_internal ? PHY_EVENT_LINK_UP : PHY_EVENT_LINK_DOWN, dev->callback_context);
         PHY_CHECK_END(status);
     }
 
