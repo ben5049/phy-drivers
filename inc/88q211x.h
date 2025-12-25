@@ -134,6 +134,8 @@ phy_status_t PHY_88Q211X_GetVCTResults(phy_handle_88q211x_t *dev, phy_cable_stat
 
 phy_status_t PHY_88Q211X_CheckFaults(phy_handle_88q211x_t *dev, phy_fault_t *fault);
 
+phy_status_t PHY_88Q211X_GetSQI(phy_handle_88q211x_t *dev, uint8_t *sqi);
+
 phy_status_t PHY_88Q211X_Start100MBIST(phy_handle_88q211x_t *dev);
 phy_status_t PHY_88Q211X_Stop100MBIST(phy_handle_88q211x_t *dev);
 phy_status_t PHY_88Q211X_Get100MBISTResults(phy_handle_88q211x_t *dev, bool *error);

@@ -28,10 +28,6 @@ enum phy_88q211x_pma_pmd_reg_e {
     PHY_88Q211X_REG_PMA_PMD_PKG_DEVS_1                = 0x0005,
     PHY_88Q211X_REG_PMA_PMD_PKG_DEVS_2                = 0x0006,
     PHY_88Q211X_REG_PMA_PMD_CTRL_2                    = 0x0007,
-    PHY_88Q211X_REG_10G_PMA_PMD_STATUS_2              = 0x0008,
-    PHY_88Q211X_REG_10G_PMA_TX_DISABLE                = 0x0009,
-    PHY_88Q211X_REG_10G_PMA_PMD_SIG_DET               = 0x000a,
-    PHY_88Q211X_REG_PMA_PMD_EXT_ABILITY               = 0x000b,
     PHY_88Q211X_REG_PMA_PMD_PKG_ID_1                  = 0x000e,
     PHY_88Q211X_REG_PMA_PMD_PKG_ID_2                  = 0x000f,
     PHY_88Q211X_REG_BASE_T1_PMA_PMD_EXT_ABILITY       = 0x0012,
@@ -52,10 +48,6 @@ enum phy_88q211x_pma_pmd_dev_e {
     PHY_88Q211X_DEV_PMA_PMD_PKG_DEVS_1                = 0x01,
     PHY_88Q211X_DEV_PMA_PMD_PKG_DEVS_2                = 0x01,
     PHY_88Q211X_DEV_PMA_PMD_CTRL_2                    = 0x01,
-    PHY_88Q211X_DEV_10G_PMA_PMD_STATUS_2              = 0x01,
-    PHY_88Q211X_DEV_10G_PMA_TX_DISABLE                = 0x01,
-    PHY_88Q211X_DEV_10G_PMA_PMD_SIG_DET               = 0x01,
-    PHY_88Q211X_DEV_PMA_PMD_EXT_ABILITY               = 0x01,
     PHY_88Q211X_DEV_PMA_PMD_PKG_ID_1                  = 0x01,
     PHY_88Q211X_DEV_PMA_PMD_PKG_ID_2                  = 0x01,
     PHY_88Q211X_DEV_BASE_T1_PMA_PMD_EXT_ABILITY       = 0x01,
@@ -69,24 +61,27 @@ enum phy_88q211x_pma_pmd_dev_e {
 };
 
 
-#define PHY_88Q211X_OUI_3_18_SHIFT        (0)
-#define PHY_88Q211X_OUI_3_18_MASK         (0xffff << PHY_88Q211X_OUI_3_18_SHIFT)
-#define PHY_88Q211X_OUI_19_24_SHIFT       (10)
-#define PHY_88Q211X_OUI_19_24_MASK        (0x003f << PHY_88Q211X_OUI_19_24_SHIFT)
-#define PHY_88Q211X_MODEL_NUMBER_SHIFT    (4)
-#define PHY_88Q211X_MODEL_NUMBER_MASK     (0x003f << PHY_88Q211X_MODEL_NUMBER_SHIFT)
-#define PHY_88Q211X_REVISION_NUMBER_SHIFT (0)
-#define PHY_88Q211X_REVISION_NUMBER_MASK  (0x000f << PHY_88Q211X_REVISION_NUMBER_SHIFT)
+#define PHY_88Q211X_OUI_3_18_SHIFT               (0)
+#define PHY_88Q211X_OUI_3_18_MASK                (0xffff << PHY_88Q211X_OUI_3_18_SHIFT)
+#define PHY_88Q211X_OUI_19_24_SHIFT              (10)
+#define PHY_88Q211X_OUI_19_24_MASK               (0x003f << PHY_88Q211X_OUI_19_24_SHIFT)
+#define PHY_88Q211X_MODEL_NUMBER_SHIFT           (4)
+#define PHY_88Q211X_MODEL_NUMBER_MASK            (0x003f << PHY_88Q211X_MODEL_NUMBER_SHIFT)
+#define PHY_88Q211X_REVISION_NUMBER_SHIFT        (0)
+#define PHY_88Q211X_REVISION_NUMBER_MASK         (0x000f << PHY_88Q211X_REVISION_NUMBER_SHIFT)
 
-#define PHY_88Q211X_MASTER                (1 << 14)
-#define PHY_88Q211X_SPEED_SHIFT           (0)
-#define PHY_88Q211X_SPEED_MASK            (0x000f << PHY_88Q211X_SPEED_SHIFT)
-#define PHY_88Q211X_SPEED_100M            (0x0)
-#define PHY_88Q211X_SPEED_1000M           (0x1)
+#define PHY_88Q211X_MASTER                       (1 << 14)
+#define PHY_88Q211X_SPEED_SHIFT                  (0)
+#define PHY_88Q211X_SPEED_MASK                   (0x000f << PHY_88Q211X_SPEED_SHIFT)
+#define PHY_88Q211X_SPEED_100M                   (0x0)
+#define PHY_88Q211X_SPEED_1000M                  (0x1)
 
-#define PHY_88Q211X_IEEE_POWER_DOWN       (1 << 11) /* Both 1.0900.11 and 3.0000.11 control power down */
-#define PHY_88Q211X_PMA_TRANSMIT_DISABLE  (1 << 14)
-#define PHY_88Q211X_PMA_PMD_RST           (1 << 15)
+#define PHY_88Q211X_IEEE_POWER_DOWN              (1 << 11) /* Both 1.0900.11 and 3.0000.11 control power down */
+#define PHY_88Q211X_PMA_TRANSMIT_DISABLE         (1 << 14)
+#define PHY_88Q211X_PMA_PMD_RST                  (1 << 15)
+
+#define PHY_88Q211X_1000BASE_T1_REVERSE_POLARITY (1 << 2)
+
 
 /* ---------------------------------------------------------------------------- */
 /* Common Control Registers */
@@ -109,6 +104,7 @@ enum phy_88q211x_ctrl_reg_e {
     PHY_88Q211X_REG_IO_VOLTAGE_CTRL   = 0x8214,
     PHY_88Q211X_REG_LPSD_1            = 0x801c,
     PHY_88Q211X_REG_LPSD_2            = 0x801d,
+    PHY_88Q211X_REG_SQI               = 0xfc4c,
 };
 
 enum phy_88q211x_ctrl_dev_e {
@@ -128,6 +124,7 @@ enum phy_88q211x_ctrl_dev_e {
     PHY_88Q211X_DEV_IO_VOLTAGE_CTRL   = 0x04,
     PHY_88Q211X_DEV_LPSD_1            = 0x03,
     PHY_88Q211X_DEV_LPSD_2            = 0x03,
+    PHY_88Q211X_DEV_SQI               = 0x03,
 };
 
 #define PHY_88Q211X_RST_RGMII                      (1 << 15)
@@ -283,10 +280,14 @@ enum phy_88q211x_100base_t1_pcs_dev_e {
 
 #define PHY_88Q211X_100BASE_T1_LINK_STATUS_CHANGE (1 << 10)
 
+#define PHY_88Q211X_100BASE_T1_REVERSE_POLARITY   (1 << 1)
 #define PHY_88Q211X_100BASE_T1_LINK_STATUS        (1 << 2)
 
 #define PHY_88Q211X_CU_TX_FIFO_DEPTH_SHIFT        (14)
 #define PHY_88Q211X_CU_TX_FIFO_DEPTH_MASK         (0x3 << PHY_88Q211X_CU_TX_FIFO_DEPTH_SHIFT)
+
+#define PHY_88Q211X_100BASE_T1_SQI_SHIFT          (12)
+#define PHY_88Q211X_100BASE_T1_SQI_MASK           (0xf << PHY_88Q211X_100BASE_T1_SQI_SHIFT)
 
 /* ---------------------------------------------------------------------------- */
 /* 3.6 1000BASE-T1 Copper Unit Advance PCS Registers */

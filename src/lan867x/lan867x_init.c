@@ -219,6 +219,7 @@ static phy_status_t PHY_LAN867X_ApplyConfigEnableSQI(phy_handle_lan867x_t *dev) 
         case PHY_LAN867X_SI_REV_B1:
         case PHY_LAN867X_SI_REV_C1:
             PHY_LOG("Warning, old silicon revision '%d', no config to apply (potentially unstable)", dev->silicon_revision);
+            break;
     }
 
     /* Enable multidrop (newer revisions turn it on by default) */

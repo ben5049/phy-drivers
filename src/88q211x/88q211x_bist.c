@@ -177,6 +177,47 @@ phy_status_t PHY_88Q211X_ResetGMIISteering(phy_handle_88q211x_t *dev) {
 }
 
 
+phy_status_t PHY_88Q211X_GetSQI(phy_handle_88q211x_t *dev, uint8_t *sqi) {
+
+    phy_status_t status   = PHY_OK;
+    uint16_t     reg_data = 0;
+
+    PHY_LOCK;
+
+    /* 100BASE-T1 Has specific SQI bits */
+    if (dev->speed == PHY_SPEED_100M) {
+
+        /* Read the 100BASE-T1 receiver status register */
+        status = PHY_READ_REG(PHY_88Q211X_DEV_RECEIVER_STATUS, PHY_88Q211X_REG_RECEIVER_STATUS, &reg_data);
+        PHY_CHECK_END(status);
+
+        /* Exctract the SQI and normalise to be between 0 and 100 */
+        *sqi = (((reg_data & PHY_88Q211X_100BASE_T1_SQI_MASK) >> PHY_88Q211X_100BASE_T1_SQI_SHIFT) * 100) / 15;
+    }
+
+    /* 1000BASE-T1 Uses the general SQI register */
+    else if (dev->speed == PHY_SPEED_1G) {
+
+        /* Read the SQI register */
+        status = PHY_READ_REG(PHY_88Q211X_DEV_SQI, PHY_88Q211X_REG_SQI, &reg_data);
+        PHY_CHECK_END(status);
+
+        /* Normalise SQI to be between 0 and 100 */
+        *sqi = ((uint32_t) reg_data * 100) / 1023;
+    }
+
+    /* No speed set, PHY unconfigured */
+    else {
+        *sqi = 0;
+    }
+
+end:
+
+    PHY_UNLOCK;
+    return status;
+}
+
+
 phy_status_t PHY_88Q211X_Start100MBIST(phy_handle_88q211x_t *dev) {
 
     phy_status_t status = PHY_OK;

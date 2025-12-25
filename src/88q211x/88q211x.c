@@ -389,6 +389,46 @@ end:
 }
 
 
+phy_status_t PHY_88Q211X_GetPolarity(phy_handle_88q211x_t *dev, bool *normal) {
+
+    phy_status_t status   = PHY_OK;
+    uint16_t     reg_data = 0;
+
+    PHY_LOCK;
+
+    /* 1000BASE-T1 */
+    if (dev->speed == PHY_SPEED_1G) {
+
+        /* Read the 1000BASE-T1 PMA status register */
+        status = PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PMA_STATUS, PHY_88Q211X_REG_1000BASE_T1_PMA_STATUS, &reg_data);
+        PHY_CHECK_END(status);
+
+        /* Get the polarity */
+        *normal = !(reg_data & PHY_88Q211X_1000BASE_T1_REVERSE_POLARITY);
+    }
+
+    /* 100BASE-T1 */
+    else if (dev->speed == PHY_SPEED_100M) {
+
+        /* Read the 100BASE-T1 status register */
+        status = PHY_READ_REG(PHY_88Q211X_DEV_100BASE_T1_STATUS_2, PHY_88Q211X_REG_100BASE_T1_STATUS_2, &reg_data);
+        PHY_CHECK_END(status);
+
+        /* Get the polarity */
+        *normal = !(reg_data & PHY_88Q211X_100BASE_T1_REVERSE_POLARITY);
+    }
+
+    /* Invalid speed, result is meaningless so return default value */
+    else {
+        *normal = true;
+    }
+
+end:
+    PHY_UNLOCK;
+    return status;
+}
+
+
 /* Enables the temperature sensor with default settings (1Hz ODR) */
 phy_status_t PHY_88Q211X_EnableTemperatureSensor(phy_handle_88q211x_t *dev) {
 
