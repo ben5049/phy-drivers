@@ -240,8 +240,20 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     /* Check speed & mode */
     status = PHY_READ_REG(PHY_88Q211X_DEV_BASE_T1_PMA_PMD_CTRL, PHY_88Q211X_REG_BASE_T1_PMA_PMD_CTRL, &reg_data);
     PHY_CHECK_END(status);
-    dev->role  = (reg_data & PHY_88Q211X_MASTER) ? PHY_ROLE_MASTER : PHY_ROLE_SLAVE;
-    dev->speed = (((reg_data & PHY_88Q211X_SPEED_MASK) >> PHY_88Q211X_SPEED_SHIFT) == PHY_88Q211X_SPEED_100M) ? PHY_SPEED_100M : PHY_SPEED_1G; /* TODO: Also check for invalid speed */
+    dev->role = (reg_data & PHY_88Q211X_MASTER) ? PHY_ROLE_MASTER : PHY_ROLE_SLAVE;
+    switch ((reg_data & PHY_88Q211X_SPEED_MASK) >> PHY_88Q211X_SPEED_SHIFT) {
+        case PHY_88Q211X_SPEED_100M:
+            dev->speed = PHY_SPEED_100M;
+            break;
+        case PHY_88Q211X_SPEED_1000M:
+            dev->speed = PHY_SPEED_1G;
+            break;
+        default:
+            status = PHY_INVALID_REGISTER_CONTENT_ERROR;
+            PHY_LOG("Error, invalid speed in register 1.0834");
+            break;
+    }
+    PHY_CHECK_END(status);
 
     /* Set the port role */
     if ((dev->role != dev->config.default_role) && (dev->config.default_role != PHY_ROLE_UNKNOWN)) {
@@ -256,14 +268,11 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     }
 
     /* Enable polarity correction (for 100BASE-T1) */
-    status = PHY_READ_REG(PHY_88Q211X_DEV_100BASE_T1_CU_CTRL, PHY_88Q211X_REG_100BASE_T1_CU_CTRL, &reg_data);
-    PHY_CHECK_END(status);
-    reg_data |= PHY_88Q211X_100BASE_T1_POL_CORRECTION;
-    status    = PHY_WRITE_REG(PHY_88Q211X_DEV_100BASE_T1_CU_CTRL, PHY_88Q211X_REG_100BASE_T1_CU_CTRL, reg_data);
+    status = PHY_88Q211X_EnableAutoPolarityCorrection(dev);
     PHY_CHECK_END(status);
 
     /* Move from unconfigured to IDLE */
-    dev->state = PHY_STATE_88Q211X_IDLE;
+    if (dev->state == PHY_STATE_88Q211X_UNCONFIGURED) dev->state = PHY_STATE_88Q211X_IDLE;
 
 end:
 

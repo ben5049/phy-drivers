@@ -191,7 +191,7 @@ phy_status_t PHY_88Q211X_GetSQI(phy_handle_88q211x_t *dev, uint8_t *sqi) {
         status = PHY_READ_REG(PHY_88Q211X_DEV_RECEIVER_STATUS, PHY_88Q211X_REG_RECEIVER_STATUS, &reg_data);
         PHY_CHECK_END(status);
 
-        /* Exctract the SQI and normalise to be between 0 and 100 */
+        /* Extract the SQI and normalise to be between 0 and 100 */
         *sqi = (((reg_data & PHY_88Q211X_100BASE_T1_SQI_MASK) >> PHY_88Q211X_100BASE_T1_SQI_SHIFT) * 100) / 15;
     }
 
@@ -200,6 +200,10 @@ phy_status_t PHY_88Q211X_GetSQI(phy_handle_88q211x_t *dev, uint8_t *sqi) {
 
         /* Read the SQI register */
         status = PHY_READ_REG(PHY_88Q211X_DEV_SQI, PHY_88Q211X_REG_SQI, &reg_data);
+        PHY_CHECK_END(status);
+
+        /* Register should contain only 10-bit number */
+        if (reg_data > 1023) status = PHY_INVALID_REGISTER_CONTENT_ERROR;
         PHY_CHECK_END(status);
 
         /* Normalise SQI to be between 0 and 100 */

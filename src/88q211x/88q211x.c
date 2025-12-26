@@ -389,6 +389,56 @@ end:
 }
 
 
+/* 1000BASE-T1 Automatic polarity correction is always enabled so this function is only for 100BASE-T1*/
+phy_status_t PHY_88Q211X_EnableAutoPolarityCorrection(phy_handle_88q211x_t *dev) {
+
+    phy_status_t status   = PHY_OK;
+    uint16_t     reg_data = 0;
+
+    PHY_LOCK;
+
+    /* Read the 100BASE-T1 control register */
+    status = PHY_READ_REG(PHY_88Q211X_DEV_100BASE_T1_CU_CTRL, PHY_88Q211X_REG_100BASE_T1_CU_CTRL, &reg_data);
+    PHY_CHECK_END(status);
+
+    /* Write the polarity correction bit if required */
+    if (!(reg_data & PHY_88Q211X_100BASE_T1_POL_CORRECTION)) {
+        reg_data |= PHY_88Q211X_100BASE_T1_POL_CORRECTION;
+        status    = PHY_WRITE_REG(PHY_88Q211X_DEV_100BASE_T1_CU_CTRL, PHY_88Q211X_REG_100BASE_T1_CU_CTRL, reg_data);
+        PHY_CHECK_END(status);
+    }
+
+end:
+    PHY_UNLOCK;
+    return status;
+}
+
+
+/* 1000BASE-T1 Automatic polarity correction is always enabled so this function is only for 100BASE-T1*/
+phy_status_t PHY_88Q211X_DisableAutoPolarityCorrection(phy_handle_88q211x_t *dev) {
+
+    phy_status_t status   = PHY_OK;
+    uint16_t     reg_data = 0;
+
+    PHY_LOCK;
+
+    /* Read the 100BASE-T1 control register */
+    status = PHY_READ_REG(PHY_88Q211X_DEV_100BASE_T1_CU_CTRL, PHY_88Q211X_REG_100BASE_T1_CU_CTRL, &reg_data);
+    PHY_CHECK_END(status);
+
+    /* Write the polarity correction bit if required */
+    if (reg_data & PHY_88Q211X_100BASE_T1_POL_CORRECTION) {
+        reg_data &= ~PHY_88Q211X_100BASE_T1_POL_CORRECTION;
+        status    = PHY_WRITE_REG(PHY_88Q211X_DEV_100BASE_T1_CU_CTRL, PHY_88Q211X_REG_100BASE_T1_CU_CTRL, reg_data);
+        PHY_CHECK_END(status);
+    }
+
+end:
+    PHY_UNLOCK;
+    return status;
+}
+
+
 phy_status_t PHY_88Q211X_GetPolarity(phy_handle_88q211x_t *dev, bool *normal) {
 
     phy_status_t status   = PHY_OK;
