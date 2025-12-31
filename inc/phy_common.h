@@ -64,6 +64,7 @@ typedef enum {
     PHY_VARIANT_LAN8670,
     PHY_VARIANT_LAN8671,
     PHY_VARIANT_LAN8672,
+    PHY_VARIANT_DP83867,
 } phy_variant_t;
 
 typedef enum {
