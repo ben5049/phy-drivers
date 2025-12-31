@@ -254,6 +254,7 @@ phy_status_t PHY_LAN867X_Init(phy_handle_lan867x_t *dev, const phy_config_lan867
     phy_status_t status = PHY_NOT_IMPLEMENTED_ERROR; // TODO: change to PHY_OK when done
 
     /* Check config parameters. TODO: More */
+    if ((config->variant != PHY_VARIANT_LAN8670) && (config->variant != PHY_VARIANT_LAN8671) && (config->variant != PHY_VARIANT_LAN8672)) status = PHY_PARAMETER_ERROR;
     if ((config->variant == PHY_VARIANT_LAN8670) && (config->interface != PHY_INTERFACE_MII) && (config->interface != PHY_INTERFACE_RMII)) status = PHY_PARAMETER_ERROR;
     if ((config->variant == PHY_VARIANT_LAN8671) && (config->interface != PHY_INTERFACE_RMII)) status = PHY_PARAMETER_ERROR;
     if ((config->variant == PHY_VARIANT_LAN8672) && (config->interface != PHY_INTERFACE_MII)) status = PHY_PARAMETER_ERROR;
@@ -272,6 +273,14 @@ phy_status_t PHY_LAN867X_Init(phy_handle_lan867x_t *dev, const phy_config_lan867
     if (callbacks->callback_write_log == NULL) status = PHY_PARAMETER_ERROR;
     PHY_CHECK_RET(status);
 
+    /* Take the mutex */
+    status = callbacks->callback_take_mutex(config->timeout, dev->callback_context);
+    PHY_CHECK_RET(status);
+
+    /* Assign the inputs */
+    dev->config    = *config;
+    dev->callbacks = callbacks;
+
     /* Set fixed attributes */
     dev->speed   = PHY_SPEED_10M;
     dev->duplex  = PHY_HALF_DUPLEX;
@@ -280,21 +289,25 @@ phy_status_t PHY_LAN867X_Init(phy_handle_lan867x_t *dev, const phy_config_lan867
 
     /* Check the ID and get the silicon revision */
     status = PHY_LAN867X_CheckID(dev);
-    PHY_CHECK_RET(status);
+    PHY_CHECK_END(status);
 
     /* Perform a software reset */
     status = PHY_LAN867X_SoftwareReset(dev);
-    PHY_CHECK_RET(status);
+    PHY_CHECK_END(status);
 
     /* Apply the arcane config and enable SQI monitoring */
     status = PHY_LAN867X_ApplyConfigEnableSQI(dev);
-    PHY_CHECK_RET(status);
+    PHY_CHECK_END(status);
 
     /* Enable PLCA (should normally be on) */
     if (dev->config.plca_enabled) {
         status = PHY_LAN867X_PLCAEnable(dev);
-        PHY_CHECK_RET(status);
+        PHY_CHECK_END(status);
     }
 
+end:
+
+    /* Release the mutex */
+    PHY_UNLOCK;
     return status;
 }
