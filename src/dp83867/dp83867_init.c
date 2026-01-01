@@ -5,8 +5,10 @@
  *      Author: bens1
  */
 
-#include "dp83867.h"
 #include "internal/phy_utils.h"
+#include "internal/phy_io.h"
+
+#include "dp83867.h"
 #include "internal/dp83867/dp83867_init.h"
 #include "internal/dp83867/dp83867_regs.h"
 
@@ -30,7 +32,7 @@ static phy_status_t PHY_DP83867_SoftwareReset(phy_handle_dp83867_t *dev) {
 
     // TODO: Implement
 
-    // DP83867_CLEAR_STATE(dev);
+    DP83867_CLEAR_STATE(dev);
 
     return status;
 }
@@ -51,8 +53,8 @@ phy_status_t PHY_DP83867_Init(phy_handle_dp83867_t *dev, const phy_config_dp8386
     PHY_CHECK_RET(status);
 
     /* Check the callbacks */
-    if (callbacks->callback_read_reg == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_write_reg == NULL) status = PHY_PARAMETER_ERROR;
+    if (callbacks->callback_read_reg_c22 == NULL) status = PHY_PARAMETER_ERROR;
+    if (callbacks->callback_write_reg_c22 == NULL) status = PHY_PARAMETER_ERROR;
     if (callbacks->callback_get_time_ms == NULL) status = PHY_PARAMETER_ERROR;
     if (callbacks->callback_delay_ms == NULL) status = PHY_PARAMETER_ERROR;
     if (callbacks->callback_delay_ns == NULL) status = PHY_PARAMETER_ERROR;
@@ -71,10 +73,11 @@ phy_status_t PHY_DP83867_Init(phy_handle_dp83867_t *dev, const phy_config_dp8386
     dev->callbacks = callbacks;
 
     /* Set fixed attributes */
-    dev->speed   = PHY_SPEED_UNKNOWN;
-    dev->duplex  = PHY_FULL_DUPLEX;
-    dev->autoneg = true;
-    dev->role    = PHY_ROLE_UNKNOWN;
+    dev->speed         = PHY_SPEED_UNKNOWN;
+    dev->duplex        = PHY_FULL_DUPLEX;
+    dev->autoneg       = true;
+    dev->role          = PHY_ROLE_UNKNOWN;
+    dev->config.c45_en = false;
 
     /* Check the ID and get the silicon revision */
     status = PHY_DP83867_CheckID(dev);
@@ -88,6 +91,8 @@ phy_status_t PHY_DP83867_Init(phy_handle_dp83867_t *dev, const phy_config_dp8386
      *  - Enable autoneg
      *  - Enable temp sensor
      *  - Enable SQI
+     *  - Disable output clock
+     *  - Enable 1ns clock skew
      */
 
 end:

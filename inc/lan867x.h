@@ -66,6 +66,7 @@ typedef struct {
     phy_interface_t interface;
     phy_speed_t     default_speed; /* The speed of the PHY immediately after initialisation */
     phy_role_t      default_role;
+    bool            c45_en;        /* Whether or not clause 45 access mechanism has been implemented */
     uint32_t        timeout;
 
     /* PHY Specific attributes */

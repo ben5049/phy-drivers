@@ -5,10 +5,12 @@
  *      Author: bens1
  */
 
+#include "internal/phy_utils.h"
+#include "internal/phy_io.h"
+
 #include "88q211x.h"
 #include "internal/88q211x/88q211x_bist.h"
 #include "internal/88q211x/88q211x_regs.h"
-#include "internal/phy_utils.h"
 
 
 /* TODO: Take configuration options */
@@ -18,7 +20,7 @@ phy_status_t PHY_88Q211X_EnablePacketGenerator(phy_handle_88q211x_t *dev) {
     uint16_t     reg_data;
 
     /* Get the current packet generator state */
-    status = PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_GENERATOR_CTRL, &reg_data);
+    status = PHY_READ_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_GENERATOR_CTRL, &reg_data);
     PHY_CHECK_RET(status);
 
     /* Enable the packet generator */
@@ -27,7 +29,7 @@ phy_status_t PHY_88Q211X_EnablePacketGenerator(phy_handle_88q211x_t *dev) {
     reg_data |= PHY_88Q211X_PACKET_GEN_TRANSMIT;
 
     /* Write the new current packet generator state */
-    status = PHY_WRITE_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_GENERATOR_CTRL, reg_data);
+    status = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_GENERATOR_CTRL, reg_data);
     PHY_CHECK_RET(status);
 
     return status;
@@ -40,13 +42,13 @@ phy_status_t PHY_88Q211X_DisablePacketGenerator(phy_handle_88q211x_t *dev) {
     uint16_t     reg_data;
 
     /* Get the current packet generator state */
-    status = PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_GENERATOR_CTRL, &reg_data);
+    status = PHY_READ_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_GENERATOR_CTRL, &reg_data);
     PHY_CHECK_RET(status);
 
     /* Only disable if the packet generator was enabled */
     if (reg_data & PHY_88Q211X_PACKET_GEN_EN) {
         reg_data &= ~PHY_88Q211X_PACKET_GEN_EN;
-        status    = PHY_WRITE_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_GENERATOR_CTRL, reg_data);
+        status    = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_GENERATOR_CTRL, reg_data);
         PHY_CHECK_RET(status);
     }
 
@@ -60,7 +62,7 @@ phy_status_t PHY_88Q211X_EnablePacketChecker(phy_handle_88q211x_t *dev) {
     uint16_t     reg_data;
 
     /* Get the current packet checker state */
-    status = PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, &reg_data);
+    status = PHY_READ_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, &reg_data);
     PHY_CHECK_RET(status);
 
     /* Return early if the packet checker is already enabled */
@@ -68,12 +70,12 @@ phy_status_t PHY_88Q211X_EnablePacketChecker(phy_handle_88q211x_t *dev) {
 
     /* Step 1: Start the counter */
     reg_data |= PHY_88Q211X_PACKET_CHECK_SAMPLE;
-    status    = PHY_WRITE_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, reg_data);
+    status    = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, reg_data);
     PHY_CHECK_RET(status);
 
     /* Step 2: Start the packet checker */
     reg_data |= PHY_88Q211X_PACKET_CHECK_SAMPLE;
-    status    = PHY_WRITE_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, reg_data);
+    status    = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, reg_data);
     PHY_CHECK_RET(status);
 
     return status;
@@ -92,13 +94,13 @@ phy_status_t PHY_88Q211X_DisablePacketChecker(phy_handle_88q211x_t *dev) {
     dev->events.crc_errors += errors;
 
     /* Get the current packet checker state */
-    status = PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, &reg_data);
+    status = PHY_READ_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, &reg_data);
     PHY_CHECK_RET(status);
 
     /* Only disable if the packet checker was enabled (this will also clear the counters) */
     if (reg_data & PHY_88Q211X_PACKET_CHECK_EN) {
         reg_data &= ~PHY_88Q211X_PACKET_CHECK_EN;
-        status    = PHY_WRITE_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, reg_data);
+        status    = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, reg_data);
         PHY_CHECK_RET(status);
     }
 
@@ -112,7 +114,7 @@ phy_status_t PHY_88Q211X_ReadPacketCheckerCounters(phy_handle_88q211x_t *dev, ui
     uint16_t     reg_data;
 
     /* Get the packet checker counters */
-    status = PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_COUNT, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_COUNT, &reg_data);
+    status = PHY_READ_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_COUNT, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_COUNT, &reg_data);
     PHY_CHECK_RET(status);
 
     /* Extract the data */
@@ -123,12 +125,12 @@ phy_status_t PHY_88Q211X_ReadPacketCheckerCounters(phy_handle_88q211x_t *dev, ui
     if (clear) {
 
         /* Get the current packet checker status */
-        status = PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, &reg_data);
+        status = PHY_READ_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, &reg_data);
         PHY_CHECK_RET(status);
 
         /* Reset the counters */
         reg_data &= ~PHY_88Q211X_PACKET_CHECK_COUNTER_RST;
-        status    = PHY_WRITE_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, reg_data);
+        status    = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, reg_data);
         PHY_CHECK_RET(status);
     }
 
@@ -149,7 +151,7 @@ phy_status_t PHY_88Q211X_ConfigureGMIISteering(phy_handle_88q211x_t *dev, phy_ho
     PHY_CHECK_RET(status);
 
     /* Get the current PCS configuration */
-    status = PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PCS_CTRL, PHY_88Q211X_REG_1000BASE_T1_PCS_CTRL, &old_pcs_config);
+    status = PHY_READ_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_PCS_CTRL, PHY_88Q211X_REG_1000BASE_T1_PCS_CTRL, &old_pcs_config);
     PHY_CHECK_RET(status);
 
     /* Update the PCS configuration */
@@ -160,7 +162,7 @@ phy_status_t PHY_88Q211X_ConfigureGMIISteering(phy_handle_88q211x_t *dev, phy_ho
 
     /* Only write the new PCS config is it has changed */
     if (new_pcs_config != old_pcs_config) {
-        status = PHY_WRITE_REG(PHY_88Q211X_DEV_1000BASE_T1_PCS_CTRL, PHY_88Q211X_REG_1000BASE_T1_PCS_CTRL, new_pcs_config);
+        status = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_PCS_CTRL, PHY_88Q211X_REG_1000BASE_T1_PCS_CTRL, new_pcs_config);
         PHY_CHECK_RET(status);
     }
 
@@ -188,7 +190,7 @@ phy_status_t PHY_88Q211X_GetSQI(phy_handle_88q211x_t *dev, uint8_t *sqi) {
     if (dev->speed == PHY_SPEED_100M) {
 
         /* Read the 100BASE-T1 receiver status register */
-        status = PHY_READ_REG(PHY_88Q211X_DEV_RECEIVER_STATUS, PHY_88Q211X_REG_RECEIVER_STATUS, &reg_data);
+        status = PHY_READ_REG(dev, PHY_88Q211X_DEV_RECEIVER_STATUS, PHY_88Q211X_REG_RECEIVER_STATUS, &reg_data);
         PHY_CHECK_END(status);
 
         /* Extract the SQI and normalise to be between 0 and 100 */
@@ -199,7 +201,7 @@ phy_status_t PHY_88Q211X_GetSQI(phy_handle_88q211x_t *dev, uint8_t *sqi) {
     else if (dev->speed == PHY_SPEED_1G) {
 
         /* Read the SQI register */
-        status = PHY_READ_REG(PHY_88Q211X_DEV_SQI, PHY_88Q211X_REG_SQI, &reg_data);
+        status = PHY_READ_REG(dev, PHY_88Q211X_DEV_SQI, PHY_88Q211X_REG_SQI, &reg_data);
         PHY_CHECK_END(status);
 
         /* Register should contain only 10-bit number */
@@ -278,7 +280,7 @@ phy_status_t PHY_88Q211X_Get100MBISTResults(phy_handle_88q211x_t *dev, bool *err
     for (uint_fast8_t i = 0; !done && (i < 10); i++) {
 
         /* Get the current packet generator state */
-        status = PHY_READ_REG(PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_GENERATOR_CTRL, &reg_data);
+        status = PHY_READ_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_GENERATOR_CTRL, &reg_data);
         PHY_CHECK_END(status);
 
         /* Check if all packets have been generated (enable self clears) */
@@ -327,34 +329,34 @@ phy_status_t PHY_88Q211X_StartVCT(phy_handle_88q211x_t *dev) {
     uint16_t reg_data;
 
     /* Step 1: Ignore wire activity (register 3.FEC9 bit 7 to 1). Note this register isn't described in the datasheet's registers section! */
-    status = PHY_READ_REG(0x03, 0xfec9, &reg_data);
+    status = PHY_READ_REG(dev, 0x03, 0xfec9, &reg_data);
     PHY_CHECK_END(status);
     reg_data |= 1 << 7;
-    status    = PHY_WRITE_REG(0x03, 0xfec9, reg_data);
+    status    = PHY_WRITE_REG(dev, 0x03, 0xfec9, reg_data);
     PHY_CHECK_END(status);
 
     /* Step 2: Fix incoming ADC sign bit (register 3.FEC3 bit 13 to 1). Note that this bit isn't described in the datasheet's registers section! */
-    status = PHY_READ_REG(PHY_88Q211X_DEV_TDR_CTRL, PHY_88Q211X_REG_TDR_CTRL, &reg_data);
+    status = PHY_READ_REG(dev, PHY_88Q211X_DEV_TDR_CTRL, PHY_88Q211X_REG_TDR_CTRL, &reg_data);
     PHY_CHECK_END(status);
     reg_data |= 1 << 13;
-    status    = PHY_WRITE_REG(PHY_88Q211X_DEV_TDR_CTRL, PHY_88Q211X_REG_TDR_CTRL, reg_data);
+    status    = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_TDR_CTRL, PHY_88Q211X_REG_TDR_CTRL, reg_data);
     PHY_CHECK_END(status);
 
     /* Step 3: Adjust threshold (register 3.FEC4 = 0x0F20). Note this register isn't described in the datasheet's registers section! */
     reg_data = 0x0f20;
-    status   = PHY_WRITE_REG(0x03, 0xfec4, reg_data);
+    status   = PHY_WRITE_REG(dev, 0x03, 0xfec4, reg_data);
     PHY_CHECK_END(status);
 
     /* Step 4: Adjust threshold (register 3.FEC7 = 0x1219). Note this register isn't described in the datasheet's registers section! */
     reg_data = 0x1219;
-    status   = PHY_WRITE_REG(0x03, 0xfec7, reg_data);
+    status   = PHY_WRITE_REG(dev, 0x03, 0xfec7, reg_data);
     PHY_CHECK_END(status);
 
     /* Step 5: Enable TDR function (register 3.FEC3 bit 14 to 1, self-clearing) */
-    status = PHY_READ_REG(PHY_88Q211X_DEV_TDR_CTRL, PHY_88Q211X_REG_TDR_CTRL, &reg_data);
+    status = PHY_READ_REG(dev, PHY_88Q211X_DEV_TDR_CTRL, PHY_88Q211X_REG_TDR_CTRL, &reg_data);
     PHY_CHECK_END(status);
     reg_data |= PHY_88Q211X_TDR_EN;
-    status    = PHY_WRITE_REG(PHY_88Q211X_DEV_TDR_CTRL, PHY_88Q211X_REG_TDR_CTRL, reg_data);
+    status    = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_TDR_CTRL, PHY_88Q211X_REG_TDR_CTRL, reg_data);
     PHY_CHECK_END(status);
 
     /* TODO: Check if bit 12 needs to be set? "Start TDR Test" bit */
@@ -381,7 +383,7 @@ phy_status_t PHY_88Q211X_GetVCTResults(phy_handle_88q211x_t *dev, phy_cable_stat
     for (uint_fast8_t i = 0; i < 10; i++) {
 
         /* Read the status register */
-        status = PHY_READ_REG(PHY_88Q211X_DEV_TDR_STATUS_1, PHY_88Q211X_REG_TDR_STATUS_1, &reg_data);
+        status = PHY_READ_REG(dev, PHY_88Q211X_DEV_TDR_STATUS_1, PHY_88Q211X_REG_TDR_STATUS_1, &reg_data);
         PHY_CHECK_END(status);
 
         /* Check if the test is complete */
@@ -406,7 +408,7 @@ phy_status_t PHY_88Q211X_GetVCTResults(phy_handle_88q211x_t *dev, phy_cable_stat
     vct_distance = (reg_data & PHY_88Q211X_TDR_VCT_DISTANCE_MASK) >> PHY_88Q211X_TDR_VCT_DISTANCE_SHIFT;
 
     /* Read register 3.FEDC[7] Polarity */
-    status = PHY_READ_REG(PHY_88Q211X_DEV_TDR_STATUS_2, PHY_88Q211X_REG_TDR_STATUS_2, &reg_data);
+    status = PHY_READ_REG(dev, PHY_88Q211X_DEV_TDR_STATUS_2, PHY_88Q211X_REG_TDR_STATUS_2, &reg_data);
     PHY_CHECK_END(status);
     vct_polarity = (bool) (reg_data & PHY_88Q211X_TDR_VCT_POLARITY);
 

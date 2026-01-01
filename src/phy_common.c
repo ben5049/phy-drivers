@@ -8,8 +8,7 @@
 #include "phy_common.h"
 #include "88q211x.h"
 #include "lan867x.h"
-#include "internal/phy_utils.h"
-
+#include "dp83867.h"
 
 phy_status_t PHY_Init(void *dev, void *config, const phy_callbacks_t *callbacks, void *callback_context) {
 
@@ -28,20 +27,14 @@ phy_status_t PHY_Init(void *dev, void *config, const phy_callbacks_t *callbacks,
             status = PHY_LAN867X_Init(dev, config, callbacks, callback_context);
             break;
 
+        case (PHY_VARIANT_DP83867):
+            status = PHY_DP83867_Init(dev, config, callbacks, callback_context);
+            break;
+
         default:
             status = PHY_PARAMETER_ERROR;
             break;
     }
 
     return status;
-}
-
-
-void PHY_GetDuplex(void *dev, phy_duplex_t *duplex) {
-    *duplex = ((phy_handle_base_t *) dev)->duplex;
-}
-
-
-void PHY_GetSpeed(void *dev, phy_speed_t *speed) {
-    *speed = ((phy_handle_base_t *) dev)->speed;
 }

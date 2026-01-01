@@ -1,23 +1,20 @@
 /*
- * phy_mdio.c
+ * stm32.c
  *
  *  Created on: Dec 9, 2025
  *      Author: bens1
  *
- * Platform specific examples of MDIO access functions.
+ * STM32 specific examples of MDIO access functions.
  *
  */
 
 #include "phy_common.h"
-#include "phy_mdio.h"
+#include "phy_platform.h"
 
 #ifdef STM32H573xx
+
 #include "stm32h5xx_hal.h"
 #include "stm32h5xx_hal_eth.h"
-#endif
-
-
-#ifdef STM32H573xx
 
 extern ETH_HandleTypeDef heth;
 

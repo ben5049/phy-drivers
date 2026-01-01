@@ -36,11 +36,17 @@ extern "C" {
 
 #define PHY_UNLOCK dev->callbacks->callback_give_mutex(dev->callback_context)
 
-#define PHY_CHECK_MEMBER_COMPATIBILITY(instance, base, member)                       \
-    _Static_assert(offsetof(instance, member) == offsetof(base, member),             \
-                   #member " offset mismatch");                                      \
+#define PHY_CHECK_MEMBER_OFFSET(instance, base, member)                  \
+    _Static_assert(offsetof(instance, member) == offsetof(base, member), \
+                   #member " offset mismatch");
+
+#define PHY_CHECK_MEMBER_SIZE(instance, base, member)                                \
     _Static_assert(sizeof(((instance *) 0)->member) == sizeof(((base *) 0)->member), \
                    #member " size mismatch");
+
+#define PHY_CHECK_MEMBER_COMPATIBILITY(instance, base, member) \
+    PHY_CHECK_MEMBER_OFFSET(instance, base, member);           \
+    PHY_CHECK_MEMBER_SIZE(instance, base, member);
 
 #define PHY_CHECK_HANDLE_MEMBERS(phy_handle_type)                                            \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, speed);               \
@@ -50,8 +56,8 @@ extern "C" {
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, linkup);              \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, temp_sensor_enabled); \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, callbacks);           \
-    PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, callback_context);
-
+    PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, callback_context);    \
+    PHY_CHECK_MEMBER_OFFSET(phy_handle_type, phy_handle_base_t, config);
 
 #define PHY_CHECK_CONFIG_MEMBERS(phy_config_type)                                      \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_config_type, phy_config_base_t, variant);       \
@@ -59,6 +65,7 @@ extern "C" {
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_config_type, phy_config_base_t, interface);     \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_config_type, phy_config_base_t, default_speed); \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_config_type, phy_config_base_t, default_role);  \
+    PHY_CHECK_MEMBER_COMPATIBILITY(phy_config_type, phy_config_base_t, c45_en);        \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_config_type, phy_config_base_t, timeout);
 
 #define PHY_CHECK_EVENTS_MEMBERS(phy_events_type)                                          \
@@ -66,29 +73,6 @@ extern "C" {
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_events_type, phy_event_counters_base_t, reads)      \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_events_type, phy_event_counters_base_t, smi_errors)
 
-#define PHY_WRITE_REG(mmd_addr, reg_addr, data)                                                                                                           \
-    ({                                                                                                                                                    \
-        phy_status_t __status;                                                                                                                            \
-        __status = dev->callbacks->callback_write_reg(dev->config.phy_addr & 0x1f, mmd_addr, reg_addr, data, dev->config.timeout, dev->callback_context); \
-        if (__status != PHY_OK) {                                                                                                                         \
-            dev->events.smi_errors++;                                                                                                                     \
-        } else {                                                                                                                                          \
-            dev->events.writes++;                                                                                                                         \
-        }                                                                                                                                                 \
-        __status;                                                                                                                                         \
-    })
-
-#define PHY_READ_REG(mmd_addr, reg_addr, data)                                                                                                           \
-    ({                                                                                                                                                   \
-        phy_status_t __status;                                                                                                                           \
-        __status = dev->callbacks->callback_read_reg(dev->config.phy_addr & 0x1f, mmd_addr, reg_addr, data, dev->config.timeout, dev->callback_context); \
-        if (__status != PHY_OK) {                                                                                                                        \
-            dev->events.smi_errors++;                                                                                                                    \
-        } else {                                                                                                                                         \
-            dev->events.reads++;                                                                                                                         \
-        }                                                                                                                                                \
-        __status;                                                                                                                                        \
-    })
 
 #if PHY_LOGGING_ENABLED == 1
 #define PHY_LOG(format, ...) dev->callbacks->callback_write_log("%s:%u (addr=%u) " format, __FILE_NAME__, __LINE__, dev->config.phy_addr, ##__VA_ARGS__)

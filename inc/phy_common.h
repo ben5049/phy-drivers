@@ -41,7 +41,8 @@ typedef enum {
     PHY_ALREADY_CONFIGURED,
     PHY_PARAMETER_ERROR,
     PHY_NOT_IMPLEMENTED_ERROR,
-    PHY_ADDR_ERROR,
+    PHY_INVALID_PHY_ADDR,
+    PHY_INVALID_MMD,
     PHY_ID_ERROR,
     PHY_MUTEX_ERROR,
     PHY_INVALID_REGISTER_CONTENT_ERROR,
@@ -104,8 +105,10 @@ typedef enum {
     PHY_EVENT_LINK_DOWN,
 } phy_event_t;
 
-typedef phy_status_t (*phy_callback_read_reg_t)(uint8_t phy_addr, uint8_t mmd_addr, uint16_t reg_addr, uint16_t *data, uint32_t timeout, void *context);
-typedef phy_status_t (*phy_callback_write_reg_t)(uint8_t phy_addr, uint8_t mmd_addr, uint16_t reg_addr, uint16_t data, uint32_t timeout, void *context);
+typedef phy_status_t (*phy_callback_read_reg_c22_t)(uint8_t phy_addr, uint16_t reg_addr, uint16_t *data, uint32_t timeout, void *context);
+typedef phy_status_t (*phy_callback_write_reg_c22_t)(uint8_t phy_addr, uint16_t reg_addr, uint16_t data, uint32_t timeout, void *context);
+typedef phy_status_t (*phy_callback_read_reg_c45_t)(uint8_t phy_addr, uint8_t mmd_addr, uint16_t reg_addr, uint16_t *data, uint32_t timeout, void *context);
+typedef phy_status_t (*phy_callback_write_reg_c45_t)(uint8_t phy_addr, uint8_t mmd_addr, uint16_t reg_addr, uint16_t data, uint32_t timeout, void *context);
 typedef uint32_t (*phy_callback_get_time_ms_t)(void *context);
 typedef void (*phy_callback_delay_ms_t)(uint32_t ms, void *context);
 typedef void (*phy_callback_delay_ns_t)(uint32_t ns, void *context);
@@ -115,15 +118,17 @@ typedef phy_status_t (*phy_callback_event_t)(phy_event_t event, void *context);
 typedef void (*phy_callback_write_log_t)(const char *format, ...);
 
 typedef struct {
-    phy_callback_read_reg_t    callback_read_reg;    /* Read from a register */
-    phy_callback_write_reg_t   callback_write_reg;   /* Write to a register */
-    phy_callback_get_time_ms_t callback_get_time_ms; /* Get time in ms */
-    phy_callback_delay_ms_t    callback_delay_ms;    /* Non-blocking delay in ms */
-    phy_callback_delay_ns_t    callback_delay_ns;    /* Blocking delay in ns */
-    phy_callback_take_mutex_t  callback_take_mutex;  /* Take the mutex protecting the device */
-    phy_callback_give_mutex_t  callback_give_mutex;  /* Give the mutex protecting the device */
-    phy_callback_event_t       callback_event;       /* Called when an event occurs like link up/down, for optional user processing */
-    phy_callback_write_log_t   callback_write_log;   /* Write a log message */
+    phy_callback_read_reg_c22_t  callback_read_reg_c22;  /* Read from a register with the clause 22 access mecahnism */
+    phy_callback_write_reg_c22_t callback_write_reg_c22; /* Write to a register with the clause 22 access mecahnism */
+    phy_callback_read_reg_c45_t  callback_read_reg_c45;  /* Read from a register with the clause 45 access mechanism */
+    phy_callback_write_reg_c45_t callback_write_reg_c45; /* Write to a register with the clause 45 access mechanism */
+    phy_callback_get_time_ms_t   callback_get_time_ms;   /* Get time in ms */
+    phy_callback_delay_ms_t      callback_delay_ms;      /* Non-blocking delay in ms */
+    phy_callback_delay_ns_t      callback_delay_ns;      /* Blocking delay in ns */
+    phy_callback_take_mutex_t    callback_take_mutex;    /* Take the mutex protecting the device */
+    phy_callback_give_mutex_t    callback_give_mutex;    /* Give the mutex protecting the device */
+    phy_callback_event_t         callback_event;         /* Called when an event occurs like link up/down, for optional user processing */
+    phy_callback_write_log_t     callback_write_log;     /* Write a log message */
 } phy_callbacks_t;
 
 typedef struct {
@@ -138,6 +143,7 @@ typedef struct {
     phy_interface_t interface;
     phy_speed_t     default_speed; /* The speed of the PHY immediately after initialisation */
     phy_role_t      default_role;
+    bool            c45_en;        /* Whether or not clause 45 access mechanism has been implemented */
     uint32_t        timeout;
 } phy_config_base_t;
 
@@ -150,13 +156,11 @@ typedef struct {
     bool                   temp_sensor_enabled;
     const phy_callbacks_t *callbacks;
     void                  *callback_context;
+    phy_config_base_t      config;
 } phy_handle_base_t;
 
 
 phy_status_t PHY_Init(void *dev, void *config, const phy_callbacks_t *callbacks, void *callback_context);
-
-void PHY_GetDuplex(void *dev, phy_duplex_t *duplex);
-void PHY_GetSpeed(void *dev, phy_speed_t *speed);
 
 
 #ifdef __cplusplus

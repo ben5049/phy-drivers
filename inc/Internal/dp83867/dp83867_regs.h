@@ -16,6 +16,10 @@ extern "C" {
 #include "dp83867.h"
 
 
+#define DP83867_REGCR 0x0d
+#define DP83867_ADDAR 0x0e
+
+
 #ifdef __cplusplus
 }
 #endif

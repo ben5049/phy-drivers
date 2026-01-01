@@ -1,5 +1,5 @@
 /*
- * phy_mdio.h
+ * phy_platform.h
  *
  *  Created on: Dec 9, 2025
  *      Author: bens1
@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef INC_PHY_MDIO_H_
-#define INC_PHY_MDIO_H_
+#ifndef INC_PHY_PLATFORM_H_
+#define INC_PHY_PLATFORM_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,4 +31,4 @@ phy_status_t phy_write_reg_c45(uint8_t phy_addr, uint8_t mmd_addr, uint16_t reg_
 }
 #endif
 
-#endif /* INC_PHY_MDIO_H_ */
+#endif /* INC_PHY_PLATFORM_H_ */

@@ -16,10 +16,9 @@ extern "C" {
 #include "dp83867.h"
 
 
-#define DP83867_CLEAR_STATE(dev)    \
-    do {                            \
-        dev->linkup        = false; \
-        dev->write_enabled = true;  \
+#define DP83867_CLEAR_STATE(dev) \
+    do {                         \
+        dev->linkup = false;     \
     } while (0)
 
 

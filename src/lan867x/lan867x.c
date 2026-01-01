@@ -5,8 +5,10 @@
  *      Author: bens1
  */
 
-#include "lan867x.h"
 #include "internal/phy_utils.h"
+#include "internal/phy_io.h"
+
+#include "lan867x.h"
 #include "internal/lan867x/lan867x_init.h"
 #include "internal/lan867x/lan867x_regs.h"
 
@@ -21,7 +23,7 @@ phy_status_t PHY_LAN867X_ProcessInterrupt(phy_handle_lan867x_t *dev) {
 
     /* Check status register 1 */
     {
-        status = PHY_READ_REG(PHY_LAN867X_DEV_STS1, PHY_LAN867X_REG_STS1, &reg_data);
+        status = PHY_READ_REG(dev, PHY_LAN867X_DEV_STS1, PHY_LAN867X_REG_STS1, &reg_data);
         PHY_CHECK_END(status);
 
         /* Signal Quality Indication Status */
@@ -100,13 +102,13 @@ phy_status_t PHY_LAN867X_ProcessInterrupt(phy_handle_lan867x_t *dev) {
 
         // TODO: Re-enable?
         // /* Get the PLCA Error Transmit Opportunity ID */
-        // status = PHY_READ_REG(PHY_LAN867X_DEV_STS3, PHY_LAN867X_REG_STS3, &reg_data);
+        // status = PHY_READ_REG(dev, PHY_LAN867X_DEV_STS3, PHY_LAN867X_REG_STS3, &reg_data);
         // PHY_CHECK_END(status);
     }
 
     /* Check status register 2 */
     {
-        status = PHY_READ_REG(PHY_LAN867X_DEV_STS2, PHY_LAN867X_REG_STS2, &reg_data);
+        status = PHY_READ_REG(dev, PHY_LAN867X_DEV_STS2, PHY_LAN867X_REG_STS2, &reg_data);
         PHY_CHECK_END(status);
 
         /* Reset complete */
@@ -163,13 +165,13 @@ phy_status_t PHY_LAN867X_EnableIEEEPowerDown(phy_handle_lan867x_t *dev) {
     PHY_LOCK;
 
     /* Read the basic control register */
-    status = PHY_READ_REG(PHY_LAN867X_DEV_BASIC_CONTROL, PHY_LAN867X_REG_BASIC_CONTROL, &reg_data);
+    status = PHY_READ_REG(dev, PHY_LAN867X_DEV_BASIC_CONTROL, PHY_LAN867X_REG_BASIC_CONTROL, &reg_data);
     PHY_CHECK_END(status);
 
     /* Set the power down bit if it isn't set */
     if (!(reg_data & PHY_LAN867X_PD)) {
         reg_data |= PHY_LAN867X_PD;
-        status    = PHY_WRITE_REG(PHY_LAN867X_DEV_BASIC_CONTROL, PHY_LAN867X_REG_BASIC_CONTROL, reg_data);
+        status    = PHY_WRITE_REG(dev, PHY_LAN867X_DEV_BASIC_CONTROL, PHY_LAN867X_REG_BASIC_CONTROL, reg_data);
         PHY_CHECK_END(status);
     }
 
@@ -186,13 +188,13 @@ phy_status_t PHY_LAN867X_DisableIEEEPowerDown(phy_handle_lan867x_t *dev) {
     PHY_LOCK;
 
     /* Read the basic control register */
-    status = PHY_READ_REG(PHY_LAN867X_DEV_BASIC_CONTROL, PHY_LAN867X_REG_BASIC_CONTROL, &reg_data);
+    status = PHY_READ_REG(dev, PHY_LAN867X_DEV_BASIC_CONTROL, PHY_LAN867X_REG_BASIC_CONTROL, &reg_data);
     PHY_CHECK_RET(status);
 
     /* Clear the power down bit if it isn't cleared */
     if (reg_data & PHY_LAN867X_PD) {
         reg_data &= ~PHY_LAN867X_PD;
-        status    = PHY_WRITE_REG(PHY_LAN867X_DEV_BASIC_CONTROL, PHY_LAN867X_REG_BASIC_CONTROL, reg_data);
+        status    = PHY_WRITE_REG(dev, PHY_LAN867X_DEV_BASIC_CONTROL, PHY_LAN867X_REG_BASIC_CONTROL, reg_data);
         PHY_CHECK_END(status);
     }
 
