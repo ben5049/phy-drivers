@@ -46,6 +46,7 @@ phy_status_t PHY_DP83867_Init(phy_handle_dp83867_t *dev, const phy_config_dp8386
 
     phy_status_t status = PHY_NOT_IMPLEMENTED_ERROR; // TODO: change to PHY_OK when done
 
+#if PHY_CHECKS_ENABLED
 
     /* Check config parameters. TODO: More */
     if (config->phy_addr > 31) status = PHY_INVALID_PHY_ADDR_ERROR;
@@ -64,6 +65,8 @@ phy_status_t PHY_DP83867_Init(phy_handle_dp83867_t *dev, const phy_config_dp8386
     if (callbacks->callback_event == NULL) status = PHY_MISSING_CALLBACK_ERROR;
     if (callbacks->callback_write_log == NULL) status = PHY_MISSING_CALLBACK_ERROR;
     PHY_CHECK_RET(status);
+
+#endif
 
     /* Take the mutex */
     status = callbacks->callback_take_mutex(config->timeout, dev->callback_context);

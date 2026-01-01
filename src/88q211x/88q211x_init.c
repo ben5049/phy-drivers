@@ -158,6 +158,8 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     phy_status_t status   = PHY_OK;
     uint16_t     reg_data = 0;
 
+#if PHY_CHECKS_ENABLED
+
     /* Check the device hasn't already been initialised. Note this may cause an unintended error if the struct uses non-zeroed memory. */
     if (dev->state != PHY_STATE_88Q211X_UNCONFIGURED) status = PHY_ALREADY_CONFIGURED;
     PHY_CHECK_RET(status);
@@ -184,6 +186,8 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     if (callbacks->callback_event == NULL) status = PHY_MISSING_CALLBACK_ERROR;
     if (callbacks->callback_write_log == NULL) status = PHY_MISSING_CALLBACK_ERROR;
     PHY_CHECK_RET(status);
+
+#endif
 
     /* Take the mutex */
     status = callbacks->callback_take_mutex(config->timeout, dev->callback_context);

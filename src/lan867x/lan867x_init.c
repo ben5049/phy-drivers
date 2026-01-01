@@ -255,7 +255,9 @@ phy_status_t PHY_LAN867X_Init(phy_handle_lan867x_t *dev, const phy_config_lan867
 
     phy_status_t status = PHY_NOT_IMPLEMENTED_ERROR; // TODO: change to PHY_OK when done
 
-    /* Check config parameters. TODO: More */
+#if PHY_CHECKS_ENABLED
+
+    /* Check config parameters */
     if (config->phy_addr > 31) status = PHY_INVALID_PHY_ADDR_ERROR;
     if ((config->variant != PHY_VARIANT_LAN8670) && (config->variant != PHY_VARIANT_LAN8671) && (config->variant != PHY_VARIANT_LAN8672)) status = PHY_INVALID_VARIANT_ERROR;
     if ((config->variant == PHY_VARIANT_LAN8670) && (config->interface != PHY_INTERFACE_MII) && (config->interface != PHY_INTERFACE_RMII)) status = PHY_INVALID_INTERFACE_ERROR;
@@ -275,6 +277,8 @@ phy_status_t PHY_LAN867X_Init(phy_handle_lan867x_t *dev, const phy_config_lan867
     if (callbacks->callback_event == NULL) status = PHY_MISSING_CALLBACK_ERROR;
     if (callbacks->callback_write_log == NULL) status = PHY_MISSING_CALLBACK_ERROR;
     PHY_CHECK_RET(status);
+
+#endif
 
     /* Take the mutex */
     status = callbacks->callback_take_mutex(config->timeout, dev->callback_context);

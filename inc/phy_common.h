@@ -25,8 +25,14 @@ extern "C" {
 #define UNUSED(x) ((void) (x))
 #endif
 
+/* Enable and disable log statements */
 #ifndef PHY_LOGGING_ENABLED
 #define PHY_LOGGING_ENABLED (1)
+#endif
+
+/* Enable and disable argument checking in functions */
+#ifndef PHY_CHECKS_ENABLED
+#define PHY_CHECKS_ENABLED (1)
 #endif
 
 #define PHY_PLCA_COORDINATOR_ID     (0)
