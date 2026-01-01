@@ -163,23 +163,26 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     PHY_CHECK_RET(status);
 
     /* Check config parameters. TODO: More */
-    if ((config->variant == PHY_VARIANT_88Q2110) && (config->interface == PHY_INTERFACE_SGMII)) status = PHY_PARAMETER_ERROR;
-    if (config->default_role >= PHY_ROLE_INVALID) status = PHY_PARAMETER_ERROR;
-    if ((config->default_speed != PHY_SPEED_100M) && (config->default_speed != PHY_SPEED_1G)) status = PHY_PARAMETER_ERROR;
+    if (config->phy_addr > 31) status = PHY_INVALID_PHY_ADDR_ERROR;
+    if ((config->variant != PHY_VARIANT_88Q2110) && (config->variant != PHY_VARIANT_88Q2112)) status = PHY_INVALID_VARIANT_ERROR;
+    if ((config->variant == PHY_VARIANT_88Q2110) && (config->interface != PHY_INTERFACE_RGMII)) status = PHY_INVALID_INTERFACE_ERROR;
+    if ((config->variant == PHY_VARIANT_88Q2112) && (config->interface != PHY_INTERFACE_RGMII) && (config->interface != PHY_INTERFACE_SGMII)) status = PHY_INVALID_INTERFACE_ERROR;
+    if (config->default_role >= PHY_ROLE_INVALID) status = PHY_INVALID_ROLE_ERROR;
+    if ((config->default_speed != PHY_SPEED_100M) && (config->default_speed != PHY_SPEED_1G)) status = PHY_INVALID_SPEED_ERROR;
     PHY_CHECK_RET(status);
 
     /* Check the callbacks */
-    if (!config->c45_en & (callbacks->callback_read_reg_c22 == NULL)) status = PHY_PARAMETER_ERROR; /* If clause 45 access not implemented then clause 22 callbacks must be present*/
-    if (!config->c45_en & (callbacks->callback_write_reg_c22 == NULL)) status = PHY_PARAMETER_ERROR;
-    if (config->c45_en & (callbacks->callback_read_reg_c45 == NULL)) status = PHY_PARAMETER_ERROR;  /* If caluse 45 access implemented then clause 45 callbacks must be present */
-    if (config->c45_en & (callbacks->callback_write_reg_c45 == NULL)) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_get_time_ms == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_delay_ms == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_delay_ns == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_take_mutex == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_give_mutex == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_event == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_write_log == NULL) status = PHY_PARAMETER_ERROR;
+    if (!config->c45_en & (callbacks->callback_read_reg_c22 == NULL)) status = PHY_MISSING_CALLBACK_ERROR; /* If clause 45 access not implemented then clause 22 callbacks must be present*/
+    if (!config->c45_en & (callbacks->callback_write_reg_c22 == NULL)) status = PHY_MISSING_CALLBACK_ERROR;
+    if (config->c45_en & (callbacks->callback_read_reg_c45 == NULL)) status = PHY_MISSING_CALLBACK_ERROR;  /* If caluse 45 access implemented then clause 45 callbacks must be present */
+    if (config->c45_en & (callbacks->callback_write_reg_c45 == NULL)) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_get_time_ms == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_delay_ms == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_delay_ns == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_take_mutex == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_give_mutex == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_event == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_write_log == NULL) status = PHY_MISSING_CALLBACK_ERROR;
     PHY_CHECK_RET(status);
 
     /* Take the mutex */

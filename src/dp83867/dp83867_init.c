@@ -48,20 +48,21 @@ phy_status_t PHY_DP83867_Init(phy_handle_dp83867_t *dev, const phy_config_dp8386
 
 
     /* Check config parameters. TODO: More */
-    if (config->variant != PHY_VARIANT_DP83867) status = PHY_PARAMETER_ERROR;
-    if ((config->interface != PHY_INTERFACE_MII) && (config->interface != PHY_INTERFACE_GMII) && (config->interface != PHY_INTERFACE_RGMII)) status = PHY_PARAMETER_ERROR;
+    if (config->phy_addr > 31) status = PHY_INVALID_PHY_ADDR_ERROR;
+    if (config->variant != PHY_VARIANT_DP83867) status = PHY_INVALID_VARIANT_ERROR;
+    if ((config->interface != PHY_INTERFACE_MII) && (config->interface != PHY_INTERFACE_GMII) && (config->interface != PHY_INTERFACE_RGMII)) status = PHY_INVALID_INTERFACE_ERROR;
     PHY_CHECK_RET(status);
 
     /* Check the callbacks */
-    if (callbacks->callback_read_reg_c22 == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_write_reg_c22 == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_get_time_ms == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_delay_ms == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_delay_ns == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_take_mutex == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_give_mutex == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_event == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_write_log == NULL) status = PHY_PARAMETER_ERROR;
+    if (callbacks->callback_read_reg_c22 == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_write_reg_c22 == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_get_time_ms == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_delay_ms == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_delay_ns == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_take_mutex == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_give_mutex == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_event == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_write_log == NULL) status = PHY_MISSING_CALLBACK_ERROR;
     PHY_CHECK_RET(status);
 
     /* Take the mutex */

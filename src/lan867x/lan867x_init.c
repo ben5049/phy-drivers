@@ -256,23 +256,24 @@ phy_status_t PHY_LAN867X_Init(phy_handle_lan867x_t *dev, const phy_config_lan867
     phy_status_t status = PHY_NOT_IMPLEMENTED_ERROR; // TODO: change to PHY_OK when done
 
     /* Check config parameters. TODO: More */
-    if ((config->variant != PHY_VARIANT_LAN8670) && (config->variant != PHY_VARIANT_LAN8671) && (config->variant != PHY_VARIANT_LAN8672)) status = PHY_PARAMETER_ERROR;
-    if ((config->variant == PHY_VARIANT_LAN8670) && (config->interface != PHY_INTERFACE_MII) && (config->interface != PHY_INTERFACE_RMII)) status = PHY_PARAMETER_ERROR;
-    if ((config->variant == PHY_VARIANT_LAN8671) && (config->interface != PHY_INTERFACE_RMII)) status = PHY_PARAMETER_ERROR;
-    if ((config->variant == PHY_VARIANT_LAN8672) && (config->interface != PHY_INTERFACE_MII)) status = PHY_PARAMETER_ERROR;
-    if (config->plca_enabled && (config->plca_id == 0) && (config->plca_node_count == 0)) status = PHY_PARAMETER_ERROR; /* There must be at least on transmit opportunity */
+    if (config->phy_addr > 31) status = PHY_INVALID_PHY_ADDR_ERROR;
+    if ((config->variant != PHY_VARIANT_LAN8670) && (config->variant != PHY_VARIANT_LAN8671) && (config->variant != PHY_VARIANT_LAN8672)) status = PHY_INVALID_VARIANT_ERROR;
+    if ((config->variant == PHY_VARIANT_LAN8670) && (config->interface != PHY_INTERFACE_MII) && (config->interface != PHY_INTERFACE_RMII)) status = PHY_INVALID_INTERFACE_ERROR;
+    if ((config->variant == PHY_VARIANT_LAN8671) && (config->interface != PHY_INTERFACE_RMII)) status = PHY_INVALID_INTERFACE_ERROR;
+    if ((config->variant == PHY_VARIANT_LAN8672) && (config->interface != PHY_INTERFACE_MII)) status = PHY_INVALID_INTERFACE_ERROR;
+    if (config->plca_enabled && (config->plca_id == 0) && (config->plca_node_count == 0)) status = PHY_PARAMETER_ERROR; /* There must be at least one transmit opportunity */
     PHY_CHECK_RET(status);
 
     /* Check the callbacks */
-    if (callbacks->callback_read_reg_c22 == NULL) status = PHY_PARAMETER_ERROR; /* Only clause 22 access is used */
-    if (callbacks->callback_write_reg_c22 == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_get_time_ms == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_delay_ms == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_delay_ns == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_take_mutex == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_give_mutex == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_event == NULL) status = PHY_PARAMETER_ERROR;
-    if (callbacks->callback_write_log == NULL) status = PHY_PARAMETER_ERROR;
+    if (callbacks->callback_read_reg_c22 == NULL) status = PHY_MISSING_CALLBACK_ERROR; /* Only clause 22 access is used */
+    if (callbacks->callback_write_reg_c22 == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_get_time_ms == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_delay_ms == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_delay_ns == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_take_mutex == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_give_mutex == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_event == NULL) status = PHY_MISSING_CALLBACK_ERROR;
+    if (callbacks->callback_write_log == NULL) status = PHY_MISSING_CALLBACK_ERROR;
     PHY_CHECK_RET(status);
 
     /* Take the mutex */

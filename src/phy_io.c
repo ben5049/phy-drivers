@@ -18,7 +18,7 @@ phy_status_t phy_read_reg(phy_handle_base_t *dev, uint8_t mmd_addr, uint16_t reg
     phy_status_t status = PHY_OK;
 
     /* Invalid MMD address */
-    if (mmd_addr > PHY_MMD_VENDOR_SPECIFIC) status = PHY_INVALID_MMD;
+    if (mmd_addr > PHY_MMD_VENDOR_SPECIFIC) status = PHY_INVALID_MMD_ERROR;
     PHY_CHECK_RET(status);
 
     /* No clause 45 support */
@@ -77,7 +77,7 @@ phy_status_t phy_write_reg(phy_handle_base_t *dev, uint8_t mmd_addr, uint16_t re
     phy_status_t status = PHY_OK;
 
     /* Invalid MMD address */
-    if (mmd_addr > PHY_MMD_VENDOR_SPECIFIC) status = PHY_INVALID_MMD;
+    if (mmd_addr > PHY_MMD_VENDOR_SPECIFIC) status = PHY_INVALID_MMD_ERROR;
     PHY_CHECK_RET(status);
 
     /* No clause 45 support */
