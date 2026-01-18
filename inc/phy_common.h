@@ -172,6 +172,7 @@ typedef struct {
 
 
 phy_status_t PHY_Init(void *dev, void *config, const phy_callbacks_t *callbacks, void *callback_context);
+phy_status_t PHY_ProcessInterrupt(void *dev);
 
 
 #ifdef __cplusplus
