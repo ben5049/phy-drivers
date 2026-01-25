@@ -36,13 +36,13 @@ extern "C" {
 
 #define PHY_UNLOCK dev->callbacks->callback_give_mutex(dev->callback_context)
 
-#define PHY_CHECK_MEMBER_OFFSET(instance, base, member)                  \
-    _Static_assert(offsetof(instance, member) == offsetof(base, member), \
-                   #member " offset mismatch");
+#define PHY_CHECK_MEMBER_OFFSET(instance, base, member)                 \
+    static_assert(offsetof(instance, member) == offsetof(base, member), \
+                  #member " offset mismatch");
 
-#define PHY_CHECK_MEMBER_SIZE(instance, base, member)                                \
-    _Static_assert(sizeof(((instance *) 0)->member) == sizeof(((base *) 0)->member), \
-                   #member " size mismatch");
+#define PHY_CHECK_MEMBER_SIZE(instance, base, member)                               \
+    static_assert(sizeof(((instance *) 0)->member) == sizeof(((base *) 0)->member), \
+                  #member " size mismatch");
 
 #define PHY_CHECK_MEMBER_COMPATIBILITY(instance, base, member) \
     PHY_CHECK_MEMBER_OFFSET(instance, base, member);           \
