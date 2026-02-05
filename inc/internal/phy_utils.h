@@ -35,7 +35,11 @@ extern "C" {
         PHY_CHECK_RET(status);                                                                    \
     } while (0)
 
-#define PHY_UNLOCK dev->callbacks->callback_give_mutex(dev->callback_context)
+#define PHY_UNLOCK       dev->callbacks->callback_give_mutex(dev->callback_context)
+
+#define PHY_DELAY_MS(ms) dev->callbacks->callback_delay_ms((ms), dev->callback_context)
+
+#define PHY_DELAY_NS(ns) dev->callbacks->callback_delay_ns((ns), dev->callback_context)
 
 #define PHY_CHECK_MEMBER_OFFSET(instance, base, member)                 \
     static_assert(offsetof(instance, member) == offsetof(base, member), \
@@ -56,7 +60,7 @@ extern "C" {
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, role);                \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, linkup);              \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, temp_sensor_enabled); \
-    PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, callbacks);           \
+    PHY_CHECK_MEMBER_OFFSET(phy_handle_type, phy_handle_base_t, callbacks);                  \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, callback_context);    \
     PHY_CHECK_MEMBER_OFFSET(phy_handle_type, phy_handle_base_t, config);
 

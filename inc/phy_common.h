@@ -143,9 +143,9 @@ typedef struct {
 } phy_callbacks_t;
 
 typedef struct {
-    atomic_int_fast32_t writes;
-    atomic_int_fast32_t reads;
-    atomic_int_fast32_t smi_errors;
+    atomic_uint_fast32_t writes;
+    atomic_uint_fast32_t reads;
+    atomic_uint_fast32_t smi_errors;
 } phy_event_counters_base_t;
 
 typedef struct {
@@ -173,6 +173,7 @@ typedef struct {
 
 phy_status_t PHY_Init(void *dev, void *config, const phy_callbacks_t *callbacks, void *callback_context);
 phy_status_t PHY_ProcessInterrupt(void *dev);
+phy_status_t PHY_GetLinkState(void *dev, bool *linkup);
 
 
 #ifdef __cplusplus

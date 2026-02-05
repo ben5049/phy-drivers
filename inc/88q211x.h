@@ -21,8 +21,8 @@ extern "C" {
 #include "internal/phy_utils.h"
 
 
-#define PHY_88Q211X_OUI          0x100158
-#define PHY_88Q211X_MODEL_NUMBER 0x18
+#define PHY_88Q211X_OUI          (0xf4c7aa)
+#define PHY_88Q211X_MODEL_NUMBER (0x18)
 
 
 typedef enum {
@@ -51,14 +51,14 @@ typedef enum {
 typedef struct {
 
     /* Common attributes */
-    atomic_int_fast32_t writes;
-    atomic_int_fast32_t reads;
-    atomic_int_fast32_t smi_errors;
+    atomic_uint_fast32_t writes;
+    atomic_uint_fast32_t reads;
+    atomic_uint_fast32_t smi_errors;
 
     /* PHY Specific attributes */
-    atomic_int_fast32_t crc_errors;
-    atomic_int_fast32_t tx_faults;
-    atomic_int_fast32_t rx_faults;
+    atomic_uint_fast32_t crc_errors;
+    atomic_uint_fast32_t tx_faults;
+    atomic_uint_fast32_t rx_faults;
 
 } phy_event_counters_88q211x_t;
 

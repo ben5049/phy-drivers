@@ -19,7 +19,7 @@
 extern ETH_HandleTypeDef heth;
 
 /* This function performs a clause 22 register read */
-phy_status_t phy_read_reg_c22(uint8_t phy_addr, uint16_t reg_addr, uint16_t *data, uint32_t timeout, uint32_t clk_div) {
+phy_status_t phy_read_reg_c22(uint8_t phy_addr, uint16_t reg_addr, uint16_t *data, uint32_t timeout, bool preamble_supression, uint32_t clk_div) {
 
     uint32_t tickstart;
     uint32_t tmp_ar = 0;
@@ -29,7 +29,11 @@ phy_status_t phy_read_reg_c22(uint8_t phy_addr, uint16_t reg_addr, uint16_t *dat
 
     /* Write the MACMDIOAR register */
     tmp_ar = READ_REG(heth.Instance->MACMDIOAR);
-    CLEAR_BIT(tmp_ar, ETH_MACMDIOAR_PSE);
+    if (preamble_supression) {
+        SET_BIT(tmp_ar, ETH_MACMDIOAR_PSE);
+    } else {
+        CLEAR_BIT(tmp_ar, ETH_MACMDIOAR_PSE);
+    }
     MODIFY_REG(tmp_ar, ETH_MACMDIOAR_PA, (((uint32_t) phy_addr) << ETH_MACMDIOAR_PA_Pos) & ETH_MACMDIOAR_PA_Msk);
     MODIFY_REG(tmp_ar, ETH_MACMDIOAR_RDA, (((uint32_t) reg_addr) << ETH_MACMDIOAR_RDA_Pos) & ETH_MACMDIOAR_RDA_Msk);
     MODIFY_REG(tmp_ar, ETH_MACMDIOAR_NTC, 1 << ETH_MACMDIOAR_NTC_Pos);
@@ -54,7 +58,7 @@ phy_status_t phy_read_reg_c22(uint8_t phy_addr, uint16_t reg_addr, uint16_t *dat
 }
 
 /* This function performs a clause 22 register write */
-phy_status_t phy_write_reg_c22(uint8_t phy_addr, uint8_t reg_addr, uint16_t data, uint32_t timeout, uint32_t clk_div) {
+phy_status_t phy_write_reg_c22(uint8_t phy_addr, uint8_t reg_addr, uint16_t data, uint32_t timeout, bool preamble_supression, uint32_t clk_div) {
 
     uint32_t tickstart;
     uint32_t tmp_ar = 0;
@@ -67,7 +71,11 @@ phy_status_t phy_write_reg_c22(uint8_t phy_addr, uint8_t reg_addr, uint16_t data
 
     /* Write the MACMDIOAR register */
     tmp_ar = READ_REG(heth.Instance->MACMDIOAR);
-    CLEAR_BIT(tmp_ar, ETH_MACMDIOAR_PSE);
+    if (preamble_supression) {
+        SET_BIT(tmp_ar, ETH_MACMDIOAR_PSE);
+    } else {
+        CLEAR_BIT(tmp_ar, ETH_MACMDIOAR_PSE);
+    }
     MODIFY_REG(tmp_ar, ETH_MACMDIOAR_PA, (((uint32_t) phy_addr) << ETH_MACMDIOAR_PA_Pos) & ETH_MACMDIOAR_PA_Msk);
     MODIFY_REG(tmp_ar, ETH_MACMDIOAR_RDA, (((uint32_t) reg_addr) << ETH_MACMDIOAR_RDA_Pos) & ETH_MACMDIOAR_RDA_Msk);
     MODIFY_REG(tmp_ar, ETH_MACMDIOAR_NTC, 1 << ETH_MACMDIOAR_NTC_Pos);

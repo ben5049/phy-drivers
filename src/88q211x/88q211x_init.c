@@ -35,14 +35,14 @@ static phy_status_t PHY_88Q211X_CheckID(phy_handle_88q211x_t *dev) {
     PHY_CHECK_RET(status);
 
     /* Get bits 3:18 of the organisationally unique identifier */
-    oui |= (uint32_t) ((reg_data & PHY_88Q211X_OUI_3_18_MASK) >> PHY_88Q211X_OUI_3_18_SHIFT) << 3;
+    oui |= (uint32_t) ((reg_data & PHY_88Q211X_OUI_3_18_MASK) >> PHY_88Q211X_OUI_3_18_SHIFT) << 6;
 
     /* Read the second ID register */
     status = PHY_READ_REG(dev, PHY_88Q211X_DEV_PMA_PMD_DEV_ID_2, PHY_88Q211X_REG_PMA_PMD_DEV_ID_2, &reg_data);
     PHY_CHECK_RET(status);
 
     /* Get bits 19:24 of the organisationally unique identifier and check it is correct */
-    oui |= ((reg_data & PHY_88Q211X_OUI_19_24_MASK) >> PHY_88Q211X_OUI_19_24_SHIFT) << 19;
+    oui |= ((reg_data & PHY_88Q211X_OUI_19_24_MASK) >> PHY_88Q211X_OUI_19_24_SHIFT);
     if (oui != PHY_88Q211X_OUI) status = PHY_ID_ERROR;
     PHY_CHECK_RET(status);
 
