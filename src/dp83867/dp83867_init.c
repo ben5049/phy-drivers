@@ -15,12 +15,36 @@
 
 static phy_status_t PHY_DP83867_CheckID(phy_handle_dp83867_t *dev) {
 
-    phy_status_t status = PHY_NOT_IMPLEMENTED_ERROR;
-    // uint16_t     reg_data = 0;
-    // uint32_t     oui      = 0;
-    // uint8_t      model    = 0;
+    phy_status_t status   = PHY_OK;
+    uint16_t     reg_data = 0;
+    uint32_t     oui      = 0;
+    uint8_t      model    = 0;
+    uint8_t      revision = 0;
 
-    // TODO: Implement
+    /* Read the first ID register */
+    status = PHY_READ_REG(dev, PHY_DP83867_MMD_BASIC, PHY_DP83867_REG_BASIC_PHYIDR1, &reg_data);
+    PHY_CHECK_RET(status);
+
+    /* Get bits 3:18 of the organisationally unique identifier */
+    oui |= (uint32_t) ((reg_data & PHY_DP83867_OUI_3_18_MASK) >> PHY_DP83867_OUI_3_18_SHIFT) << 6;
+
+    /* Read the second ID register */
+    status = PHY_READ_REG(dev, PHY_DP83867_MMD_BASIC, PHY_DP83867_REG_BASIC_PHYIDR2, &reg_data);
+    PHY_CHECK_RET(status);
+
+    /* Get bits 19:24 of the organisationally unique identifier and check it is correct */
+    oui |= ((reg_data & PHY_DP83867_OUI_19_24_MASK) >> PHY_DP83867_OUI_19_24_SHIFT);
+    if (oui != PHY_DP83867_OUI) status = PHY_ID_ERROR;
+    PHY_CHECK_RET(status);
+
+    /* Get the model number and check it is correct */
+    model = (reg_data & PHY_DP83867_MODEL_NUMBER_MASK) >> PHY_DP83867_MODEL_NUMBER_SHIFT;
+    if (model != PHY_DP83867_MODEL_NUMBER) status = PHY_ID_ERROR;
+    PHY_CHECK_RET(status);
+
+    /* Get the revision number (only for debug purposes) */
+    revision = (reg_data & PHY_DP83867_REVISION_NUMBER_MASK) >> PHY_DP83867_REVISION_NUMBER_SHIFT;
+    UNUSED(revision);
 
     return status;
 }
@@ -28,9 +52,29 @@ static phy_status_t PHY_DP83867_CheckID(phy_handle_dp83867_t *dev) {
 
 static phy_status_t PHY_DP83867_SoftwareReset(phy_handle_dp83867_t *dev) {
 
-    phy_status_t status = PHY_NOT_IMPLEMENTED_ERROR;
+    phy_status_t status         = PHY_OK;
+    uint16_t     reg_data       = 0;
+    bool         reset_complete = false;
 
-    // TODO: Implement
+    /* Set the reset bit */
+    reg_data |= PHY_DP83867_RESET;
+    status    = PHY_WRITE_REG(dev, PHY_DP83867_MMD_BASIC, PHY_DP83867_REG_BASIC_BMCR, reg_data);
+    PHY_CHECK_RET(status);
+
+    /* Poll the reset bit */
+    for (uint_fast8_t i = 0; (i < 16) && !reset_complete; i++) {
+
+        /* Read the control register */
+        status = PHY_READ_REG(dev, PHY_DP83867_MMD_BASIC, PHY_DP83867_REG_BASIC_BMCR, &reg_data);
+        PHY_CHECK_RET(status);
+
+        /* Check if the bit has been cleared */
+        if (!(reg_data & PHY_DP83867_RESET)) {
+            reset_complete = true;
+        } else {
+            PHY_DELAY_NS(5000);
+        }
+    }
 
     DP83867_CLEAR_STATE(dev);
 
@@ -44,7 +88,7 @@ phy_status_t PHY_DP83867_Init(phy_handle_dp83867_t *dev, const phy_config_dp8386
     PHY_CHECK_CONFIG_MEMBERS(phy_config_dp83867_t);
     PHY_CHECK_EVENTS_MEMBERS(phy_event_counters_dp83867_t);
 
-    phy_status_t status = PHY_NOT_IMPLEMENTED_ERROR; // TODO: change to PHY_OK when done
+    phy_status_t status = PHY_OK;
 
 #if PHY_CHECKS_ENABLED
 

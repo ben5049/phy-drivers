@@ -21,16 +21,16 @@ extern "C" {
 #include "internal/phy_utils.h"
 
 
-#define PHY_DP83867_OUI 0x0
-
+#define PHY_DP83867_OUI          (0x080028)
+#define PHY_DP83867_MODEL_NUMBER (0x23)
 
 /* Stores information about driver events */
 typedef struct {
 
     /* Common attributes */
-    atomic_int_fast32_t writes;
-    atomic_int_fast32_t reads;
-    atomic_int_fast32_t smi_errors;
+    atomic_uint_fast32_t writes;
+    atomic_uint_fast32_t reads;
+    atomic_uint_fast32_t smi_errors;
 
     /* PHY Specific attributes */
 
