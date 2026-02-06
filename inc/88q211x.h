@@ -21,7 +21,7 @@ extern "C" {
 #include "internal/phy_utils.h"
 
 
-#define PHY_88Q211X_OUI          (0xf4c7aa)
+#define PHY_88Q211X_OUI          (0x100158)
 #define PHY_88Q211X_MODEL_NUMBER (0x18)
 
 
