@@ -106,8 +106,8 @@ typedef enum {
 
 typedef enum {
     PHY_ROLE_UNKNOWN = 0x0,
-    PHY_ROLE_SLAVE   = 0x1,
-    PHY_ROLE_MASTER  = 0x2,
+    PHY_ROLE_SLAVE   = 0x1, /* For PLCA this is a follower */
+    PHY_ROLE_MASTER  = 0x2, /* For PLCA this is the coordinator */
     PHY_ROLE_INVALID = 0x3
 } phy_role_t;
 

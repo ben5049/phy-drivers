@@ -11,6 +11,7 @@
 #include "lan867x.h"
 #include "internal/lan867x/lan867x_init.h"
 #include "internal/lan867x/lan867x_regs.h"
+#include "phy_common.h"
 
 
 /* Proprietary indirect access mechanism (from AN1699 p2, DS60001699G) */
@@ -253,7 +254,7 @@ phy_status_t PHY_LAN867X_Init(phy_handle_lan867x_t *dev, const phy_config_lan867
     PHY_CHECK_CONFIG_MEMBERS(phy_config_lan867x_t);
     PHY_CHECK_EVENTS_MEMBERS(phy_event_counters_lan867x_t);
 
-    phy_status_t status = PHY_NOT_IMPLEMENTED_ERROR; // TODO: change to PHY_OK when done
+    phy_status_t status = PHY_OK;
 
 #if PHY_CHECKS_ENABLED
 
@@ -292,7 +293,7 @@ phy_status_t PHY_LAN867X_Init(phy_handle_lan867x_t *dev, const phy_config_lan867
     dev->speed         = PHY_SPEED_10M;
     dev->duplex        = PHY_HALF_DUPLEX;
     dev->autoneg       = false;
-    dev->role          = PHY_ROLE_UNKNOWN;
+    dev->role          = (config->plca_id == 0) ? PHY_ROLE_MASTER : PHY_ROLE_SLAVE;
     dev->config.c45_en = false;
 
     /* Check the ID and get the silicon revision */
@@ -317,5 +318,6 @@ end:
 
     /* Release the mutex */
     PHY_UNLOCK;
-    return status;
+    // return status; // TODO: change when driver is done
+    return PHY_NOT_IMPLEMENTED_ERROR; // TODO: change when driver is done
 }
