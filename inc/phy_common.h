@@ -172,8 +172,14 @@ typedef struct {
 
 
 phy_status_t PHY_Init(void *dev, void *config, const phy_callbacks_t *callbacks, void *callback_context);
+
+phy_status_t PHY_EnableInterrupts(void *dev);
 phy_status_t PHY_ProcessInterrupt(void *dev);
+
 phy_status_t PHY_GetLinkState(void *dev, bool *linkup);
+
+phy_status_t PHY_EnableTemperatureSensor(void *dev);
+phy_status_t PHY_ReadTemperature(void *dev, float *temp, bool *valid);
 
 
 #ifdef __cplusplus

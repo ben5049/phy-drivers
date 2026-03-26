@@ -41,6 +41,36 @@ phy_status_t PHY_Init(void *dev, void *config, const phy_callbacks_t *callbacks,
 }
 
 
+phy_status_t PHY_EnableInterrupts(void *dev) {
+
+    phy_status_t status = PHY_OK;
+
+    switch (((phy_handle_base_t *) dev)->config.variant) {
+
+        case (PHY_VARIANT_88Q2110):
+        case (PHY_VARIANT_88Q2112):
+            status = PHY_88Q211X_EnableInterrupts(dev);
+            break;
+
+        case (PHY_VARIANT_LAN8670):
+        case (PHY_VARIANT_LAN8671):
+        case (PHY_VARIANT_LAN8672):
+            status = PHY_LAN867X_EnableInterrupts(dev);
+            break;
+
+        case (PHY_VARIANT_DP83867):
+            status = PHY_NOT_IMPLEMENTED_ERROR;
+            break;
+
+        default:
+            status = PHY_PARAMETER_ERROR;
+            break;
+    }
+
+    return status;
+}
+
+
 phy_status_t PHY_ProcessInterrupt(void *dev) {
 
     phy_status_t status = PHY_OK;
@@ -90,6 +120,65 @@ phy_status_t PHY_GetLinkState(void *dev, bool *linkup) {
 
         case (PHY_VARIANT_DP83867):
             status = PHY_DP83867_GetLinkState(dev, linkup);
+            break;
+
+        default:
+            status = PHY_PARAMETER_ERROR;
+            break;
+    }
+
+    return status;
+}
+
+
+phy_status_t PHY_EnableTemperatureSensor(void *dev) {
+
+    phy_status_t status = PHY_OK;
+
+    switch (((phy_handle_base_t *) dev)->config.variant) {
+
+        case (PHY_VARIANT_88Q2110):
+        case (PHY_VARIANT_88Q2112):
+            status = PHY_88Q211X_EnableTemperatureSensor(dev);
+            break;
+
+        case (PHY_VARIANT_LAN8670):
+        case (PHY_VARIANT_LAN8671):
+        case (PHY_VARIANT_LAN8672):
+            break; /* No temperature sensor available on this PHY */
+
+        case (PHY_VARIANT_DP83867):
+            status = PHY_NOT_IMPLEMENTED_ERROR;
+            break;
+
+        default:
+            status = PHY_PARAMETER_ERROR;
+            break;
+    }
+
+    return status;
+}
+
+
+phy_status_t PHY_ReadTemperature(void *dev, float *temp, bool *valid) {
+
+    phy_status_t status = PHY_OK;
+
+    switch (((phy_handle_base_t *) dev)->config.variant) {
+
+        case (PHY_VARIANT_88Q2110):
+        case (PHY_VARIANT_88Q2112):
+            status = PHY_88Q211X_ReadTemperature(dev, temp, valid);
+            break;
+
+        case (PHY_VARIANT_LAN8670):
+        case (PHY_VARIANT_LAN8671):
+        case (PHY_VARIANT_LAN8672):
+            *valid = false; /* No temperature sensor available on this PHY */
+            break;
+
+        case (PHY_VARIANT_DP83867):
+            status = PHY_NOT_IMPLEMENTED_ERROR;
             break;
 
         default:

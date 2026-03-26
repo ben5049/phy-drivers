@@ -321,3 +321,7 @@ end:
     // return status; // TODO: change when driver is done
     return PHY_NOT_IMPLEMENTED_ERROR; // TODO: change when driver is done
 }
+
+phy_status_t PHY_LAN867X_EnableInterrupts(phy_handle_lan867x_t *dev) {
+    return PHY_NOT_IMPLEMENTED_ERROR;
+}
