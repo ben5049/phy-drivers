@@ -5,12 +5,12 @@
  *      Author: bens1
  */
 
-#include "internal/phy_utils.h"
-#include "internal/phy_io.h"
+#include "phy_utils.h"
+#include "phy_io.h"
 
 #include "88q211x.h"
-#include "internal/88q211x/88q211x_regs.h"
-#include "internal/88q211x/88q211x_xmii.h"
+#include "88q211x_regs.h"
+#include "88q211x_xmii.h"
 
 
 phy_status_t PHY_88Q211X_SoftwareResetRGMII(phy_handle_88q211x_t *dev) {

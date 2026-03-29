@@ -5,12 +5,12 @@
  *      Author: bens1
  */
 
-#include "internal/phy_utils.h"
-#include "internal/phy_io.h"
+#include "phy_utils.h"
+#include "phy_io.h"
 
 #include "88q211x.h"
-#include "internal/88q211x/88q211x_bist.h"
-#include "internal/88q211x/88q211x_regs.h"
+#include "88q211x_bist.h"
+#include "88q211x_regs.h"
 
 
 /* TODO: Take configuration options */

@@ -9,8 +9,8 @@
  */
 
 #include "phy_common.h"
-#include "internal/phy_utils.h"
-#include "internal/phy_io.h"
+#include "phy_utils.h"
+#include "phy_io.h"
 
 
 phy_status_t phy_read_reg(phy_handle_base_t *dev, uint8_t mmd_addr, uint16_t reg_addr, uint16_t *data) {

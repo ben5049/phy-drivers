@@ -15,6 +15,7 @@ extern "C" {
 
 #include "stddef.h"
 #include "assert.h"
+#include "stdint.h"
 
 #include "phy_common.h"
 
@@ -84,6 +85,10 @@ extern "C" {
 #else
 #define PHY_LOG(format, ...) PHY_OK
 #endif
+
+
+uint8_t  reverse_byte(uint8_t b);
+uint32_t pack_oui(uint16_t oui_2_17, uint8_t oui_18_23);
 
 
 #ifdef __cplusplus
