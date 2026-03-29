@@ -103,6 +103,8 @@ phy_status_t PHY_LAN867X_EnableInterrupts(phy_handle_lan867x_t *dev);
 phy_status_t PHY_LAN867X_DisableInterrupts(phy_handle_lan867x_t *dev);
 phy_status_t PHY_LAN867X_ProcessInterrupt(phy_handle_lan867x_t *dev);
 
+phy_status_t PHY_LAN867X_GetLinkState(phy_handle_lan867x_t *dev, bool *linkup);
+
 phy_status_t PHY_LAN867X_EnableIEEEPowerDown(phy_handle_lan867x_t *dev);
 phy_status_t PHY_LAN867X_DisableIEEEPowerDown(phy_handle_lan867x_t *dev);
 

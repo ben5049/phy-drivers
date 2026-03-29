@@ -12,6 +12,25 @@
 #include "lan867x_init.h"
 #include "lan867x_regs.h"
 #include "phy_common.h"
+#include "phy_utils.h"
+
+
+static inline char *phy_lan867x_rev_to_str(uint8_t rev) {
+    switch (rev) {
+        case PHY_LAN867X_SI_REV_A0:
+            return "A0";
+        case PHY_LAN867X_SI_REV_B1:
+            return "B1";
+        case PHY_LAN867X_SI_REV_C1:
+            return "C1";
+        case PHY_LAN867X_SI_REV_C2:
+            return "C2";
+        case PHY_LAN867X_SI_REV_D0:
+            return "D0";
+        default:
+            return "unknown";
+    }
+}
 
 
 /* Proprietary indirect access mechanism (from AN1699 p2, DS60001699G) */
@@ -44,14 +63,14 @@ static phy_status_t PHY_LAN867X_CheckID(phy_handle_lan867x_t *dev) {
     PHY_CHECK_RET(status);
 
     /* Get bits 2:17 of the organisationally unique identifier */
-    oui |= (uint32_t) reg_data << 6;
+    oui |= pack_oui(reg_data, 0);
 
     /* Read the second ID register */
     status = PHY_READ_REG(dev, PHY_LAN867X_DEV_PHY_ID2, PHY_LAN867X_REG_PHY_ID2, &reg_data);
     PHY_CHECK_RET(status);
 
     /* Get bits 18:23 of the organisationally unique identifier and check it is correct */
-    oui |= ((reg_data & PHY_LAN867X_OUI_18_23_MASK) >> PHY_LAN867X_OUI_18_23_SHIFT);
+    oui |= pack_oui(0, (reg_data & PHY_LAN867X_OUI_18_23_MASK) >> PHY_LAN867X_OUI_18_23_SHIFT);
     if (oui != PHY_LAN867X_OUI) status = PHY_ID_ERROR;
     PHY_CHECK_RET(status);
 
@@ -63,6 +82,7 @@ static phy_status_t PHY_LAN867X_CheckID(phy_handle_lan867x_t *dev) {
     /* Get the revision and check it is correct */
     dev->silicon_revision = (reg_data & PHY_LAN867X_REV_MASK) >> PHY_LAN867X_REV_SHIFT;
     if ((dev->silicon_revision == PHY_LAN867X_SI_REV_D0) && (dev->config.variant == PHY_VARIANT_LAN8672)) status = PHY_ID_ERROR;
+    PHY_LOG("PHY revision %s", phy_lan867x_rev_to_str(dev->silicon_revision));
     PHY_CHECK_RET(status);
 
     return status;
@@ -71,11 +91,39 @@ static phy_status_t PHY_LAN867X_CheckID(phy_handle_lan867x_t *dev) {
 static phy_status_t PHY_LAN867X_SoftwareReset(phy_handle_lan867x_t *dev) {
 
     phy_status_t status = PHY_OK;
+    uint16_t     reg_data;
+    bool         reset_complete = false;
 
-    status = PHY_WRITE_REG(dev, PHY_LAN867X_DEV_BASIC_CONTROL, PHY_LAN867X_REG_BASIC_CONTROL, PHY_LAN867X_SW_RESET);
+    /* Write the software reset bit */
+    reg_data = PHY_LAN867X_SW_RESET;
+    status   = PHY_WRITE_REG(dev, PHY_LAN867X_DEV_BASIC_CONTROL, PHY_LAN867X_REG_BASIC_CONTROL, reg_data);
     PHY_CHECK_RET(status);
 
-    LAN867X_CLEAR_STATE(dev);
+    /* Poll the reset complete flag */
+    for (uint_fast8_t attempt = 0; (attempt < 16) && !reset_complete; attempt++) {
+
+        /* Read the status register */
+        status = PHY_READ_REG(dev, PHY_LAN867X_DEV_STS2, PHY_LAN867X_REG_STS2, &reg_data);
+        PHY_CHECK_RET(status);
+
+        /* Extract the reset complete bit */
+        reset_complete = reg_data & LAN867X_MISC_RESETC;
+
+        /* Wait 1ms before trying again */
+        if (!reset_complete) {
+            PHY_DELAY_MS(1);
+        }
+    }
+
+    /* Reset not done */
+    if (!reset_complete) {
+        status = PHY_TIMEOUT;
+    }
+
+    /* Reset done, clear state */
+    else {
+        LAN867X_CLEAR_STATE(dev);
+    }
 
     return status;
 }
@@ -221,7 +269,7 @@ static phy_status_t PHY_LAN867X_ApplyConfigEnableSQI(phy_handle_lan867x_t *dev) 
         case PHY_LAN867X_SI_REV_A0:
         case PHY_LAN867X_SI_REV_B1:
         case PHY_LAN867X_SI_REV_C1:
-            PHY_LOG("Warning, old silicon revision '%d', no config to apply (potentially unstable)", dev->silicon_revision);
+            PHY_LOG("Warning, old silicon revision %s, no config to apply (potentially unstable)", phy_lan867x_rev_to_str(dev->silicon_revision));
             break;
     }
 
@@ -240,9 +288,21 @@ static phy_status_t PHY_LAN867X_ApplyConfigEnableSQI(phy_handle_lan867x_t *dev) 
 /* Enable physical layer collision avoidance (PLCA) */
 static phy_status_t PHY_LAN867X_PLCAEnable(phy_handle_lan867x_t *dev) {
 
-    phy_status_t status = PHY_NOT_IMPLEMENTED_ERROR;
+    phy_status_t status   = PHY_OK;
+    uint16_t     reg_data = 0;
 
+    /* Set the node count and PLCA local ID */
+    reg_data |= dev->config.plca_node_count << LAN867X_PLCA_NCNT_SHIFT;
+    reg_data |= dev->config.plca_id;
+    status    = PHY_WRITE_REG(dev, PHY_LAN867X_DEV_PLCA_CTRL1, PHY_LAN867X_REG_PLCA_CTRL1, reg_data);
+    PHY_CHECK_RET(status);
 
+    /* Enable PLCA */
+    reg_data = LAN867X_PLCA_EN;
+    status   = PHY_WRITE_REG(dev, PHY_LAN867X_DEV_PLCA_CTRL0, PHY_LAN867X_REG_PLCA_CTRL0, reg_data);
+    PHY_CHECK_RET(status);
+
+    // TODO: Configure additional transmit opportunities if required
     // TODO: disabling collision detection is recommended
 
     return status;
@@ -314,12 +374,12 @@ phy_status_t PHY_LAN867X_Init(phy_handle_lan867x_t *dev, const phy_config_lan867
         PHY_CHECK_END(status);
     }
 
+    // TODO: Set write enable false
 end:
 
     /* Release the mutex */
     PHY_UNLOCK;
-    // return status; // TODO: change when driver is done
-    return PHY_NOT_IMPLEMENTED_ERROR; // TODO: change when driver is done
+    return status;
 }
 
 phy_status_t PHY_LAN867X_EnableInterrupts(phy_handle_lan867x_t *dev) {

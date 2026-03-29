@@ -115,7 +115,7 @@ phy_status_t PHY_GetLinkState(void *dev, bool *linkup) {
         case (PHY_VARIANT_LAN8670):
         case (PHY_VARIANT_LAN8671):
         case (PHY_VARIANT_LAN8672):
-            *linkup = false; /* 10BASE-T1S PHYs have no concept of link state */
+            status = PHY_LAN867X_GetLinkState(dev, linkup);
             break;
 
         case (PHY_VARIANT_DP83867):

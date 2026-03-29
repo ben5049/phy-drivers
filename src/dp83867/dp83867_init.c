@@ -5,12 +5,12 @@
  *      Author: bens1
  */
 
-#include "internal/phy_utils.h"
-#include "internal/phy_io.h"
+#include "phy_utils.h"
+#include "phy_io.h"
 
 #include "dp83867.h"
-#include "internal/dp83867/dp83867_init.h"
-#include "internal/dp83867/dp83867_regs.h"
+#include "dp83867_init.h"
+#include "dp83867_regs.h"
 
 
 static phy_status_t PHY_DP83867_CheckID(phy_handle_dp83867_t *dev) {

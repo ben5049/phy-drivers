@@ -316,6 +316,10 @@ enum phy_lan867x_misc_dev_e {
 
 #define LAN867X_MISC_IR_MODE                 (0x0002)
 
+#define LAN867X_PLCA_EN                      (1 << 15)
+#define LAN867X_PLCA_NCNT_SHIFT              (8)
+#define LAN867X_PLCA_PST                     (1 << 15) /* PLCA Status: BEACON being regularly transmitted or received */
+
 
 #ifdef __cplusplus
 }

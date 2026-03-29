@@ -22,9 +22,9 @@ phy_status_t PHY_LAN867X_ProcessInterrupt(phy_handle_lan867x_t *dev) {
     PHY_LOCK;
 
     /* Check status register 1 */
-    {
-        status = PHY_READ_REG(dev, PHY_LAN867X_DEV_STS1, PHY_LAN867X_REG_STS1, &reg_data);
-        PHY_CHECK_END(status);
+    status = PHY_READ_REG(dev, PHY_LAN867X_DEV_STS1, PHY_LAN867X_REG_STS1, &reg_data);
+    PHY_CHECK_END(status);
+    if (reg_data) {
 
         /* Signal Quality Indication Status */
         if (reg_data & LAN867X_MISC_SQI) {
@@ -34,6 +34,8 @@ phy_status_t PHY_LAN867X_ProcessInterrupt(phy_handle_lan867x_t *dev) {
         /* PLCA Status Changed */
         if (reg_data & LAN867X_MISC_PSTC) {
             source_found = true;
+            status       = PHY_LAN867X_GetLinkState(dev, NULL);
+            PHY_CHECK_END(status);
         }
 
         /* Transmit Collision Status */
@@ -107,9 +109,9 @@ phy_status_t PHY_LAN867X_ProcessInterrupt(phy_handle_lan867x_t *dev) {
     }
 
     /* Check status register 2 */
-    {
-        status = PHY_READ_REG(dev, PHY_LAN867X_DEV_STS2, PHY_LAN867X_REG_STS2, &reg_data);
-        PHY_CHECK_END(status);
+    status = PHY_READ_REG(dev, PHY_LAN867X_DEV_STS2, PHY_LAN867X_REG_STS2, &reg_data);
+    PHY_CHECK_END(status);
+    if (reg_data) {
 
         /* Reset complete */
         if (reg_data & LAN867X_MISC_RESETC) {
@@ -150,6 +152,50 @@ phy_status_t PHY_LAN867X_ProcessInterrupt(phy_handle_lan867x_t *dev) {
         status = PHY_UNKNOWN_INTERRUPT_ERROR;
         PHY_CHECK_END(status);
     }
+
+end:
+
+    PHY_UNLOCK;
+    return status;
+}
+
+
+phy_status_t PHY_LAN867X_GetLinkState(phy_handle_lan867x_t *dev, bool *linkup) {
+
+    phy_status_t status          = PHY_OK;
+    uint16_t     reg_data        = 0;
+    bool         linkup_internal = false;
+
+    PHY_LOCK;
+
+    /* 10BASE-T1S PHYs have no concept of link state. Instead use the PLCA status if available.
+     * This only works for a PLCA follower since a coordinator will always be transmitting BEACONs. */
+    if (dev->config.plca_enabled && (dev->role == PHY_ROLE_SLAVE)) {
+
+        /* Read the PLCA status register */
+        status = PHY_READ_REG(dev, PHY_LAN867X_DEV_PLCA_STS, PHY_LAN867X_REG_PLCA_STS, &reg_data);
+        PHY_CHECK_END(status);
+
+        /* Extract the PLCA status bit */
+        linkup_internal = reg_data & LAN867X_PLCA_PST;
+    }
+
+    /* No PLCA */
+    else {
+        linkup_internal = false;
+    }
+
+    /* If there is a change then call the corresponding callback */
+    if (dev->linkup != linkup_internal) {
+        status = dev->callbacks->callback_event(linkup_internal ? PHY_EVENT_LINK_UP : PHY_EVENT_LINK_DOWN, dev->callback_context);
+        PHY_CHECK_END(status);
+    }
+
+    /* Update the device struct */
+    dev->linkup = linkup_internal;
+
+    /* Update the output */
+    if (linkup != NULL) *linkup = dev->linkup;
 
 end:
 
