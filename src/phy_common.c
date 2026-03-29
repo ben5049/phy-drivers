@@ -11,7 +11,7 @@
 #include "dp83867.h"
 
 
-phy_status_t PHY_Init(void *dev, void *config, const phy_callbacks_t *callbacks, void *callback_context) {
+phy_status_t PHY_Init(void *dev, const void *config, const phy_callbacks_t *callbacks, void *callback_context) {
 
     phy_status_t status = PHY_OK;
 

@@ -171,7 +171,7 @@ typedef struct {
 } phy_handle_base_t;
 
 
-phy_status_t PHY_Init(void *dev, void *config, const phy_callbacks_t *callbacks, void *callback_context);
+phy_status_t PHY_Init(void *dev, const void *config, const phy_callbacks_t *callbacks, void *callback_context);
 
 phy_status_t PHY_EnableInterrupts(void *dev);
 phy_status_t PHY_ProcessInterrupt(void *dev);
