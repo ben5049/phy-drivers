@@ -690,3 +690,48 @@ end:
     PHY_UNLOCK;
     return status;
 }
+
+
+phy_status_t PHY_88Q211X_WriteTrainingReg(phy_handle_88q211x_t *dev, bool eee, bool oam, uint8_t user_field) {
+
+    phy_status_t status   = PHY_OK;
+    uint16_t     reg_data = 0;
+
+    PHY_LOCK;
+
+    /* Pack the fields */
+    reg_data |= eee ? PHY_88Q211X_EEE_ADVERT : 0;
+    reg_data |= oam ? PHY_88Q211X_OAM_ADVERT : 0;
+    reg_data |= ((uint16_t) user_field << PHY_88Q211X_USER_FIELD_SHIFT) & PHY_88Q211X_USER_FIELD_MASK;
+
+    /* Write the 1000BASE-T1 training register */
+    status = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_TRAINING, PHY_88Q211X_REG_1000BASE_T1_TRAINING, reg_data);
+    PHY_CHECK_END(status);
+
+end:
+    PHY_UNLOCK;
+    return status;
+}
+
+
+// TODO: Investigate reads to the user field, they seem to only return 0
+phy_status_t PHY_88Q211X_ReadTrainingReg(phy_handle_88q211x_t *dev, bool *eee, bool *oam, uint8_t *user_field) {
+
+    phy_status_t status   = PHY_OK;
+    uint16_t     reg_data = 0;
+
+    PHY_LOCK;
+
+    /* Read the 1000BASE-T1 training register */
+    status = PHY_READ_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_TRAINING, PHY_88Q211X_REG_1000BASE_T1_TRAINING, &reg_data);
+    PHY_CHECK_END(status);
+
+    /* Unpack the fields */
+    if (eee != NULL) *eee = reg_data & PHY_88Q211X_EEE_ADVERT;
+    if (oam != NULL) *oam = reg_data & PHY_88Q211X_OAM_ADVERT;
+    if (user_field != NULL) *user_field = (reg_data & PHY_88Q211X_USER_FIELD_MASK) >> PHY_88Q211X_USER_FIELD_SHIFT;
+
+end:
+    PHY_UNLOCK;
+    return status;
+}

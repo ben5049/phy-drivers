@@ -82,6 +82,11 @@ enum phy_88q211x_pma_pmd_dev_e {
 
 #define PHY_88Q211X_1000BASE_T1_REVERSE_POLARITY (1 << 2)
 
+#define PHY_88Q211X_EEE_ADVERT                   (1 << 0)
+#define PHY_88Q211X_OAM_ADVERT                   (1 << 1)
+#define PHY_88Q211X_USER_FIELD_SHIFT             (4)
+#define PHY_88Q211X_USER_FIELD_MASK              (0x7f << PHY_88Q211X_USER_FIELD_SHIFT)
+
 
 /* ---------------------------------------------------------------------------- */
 /* Common Control Registers */

@@ -155,6 +155,9 @@ phy_status_t PHY_88Q211X_DisableIEEEPowerDown(phy_handle_88q211x_t *dev);
 phy_status_t PHY_88Q211X_EnableLPSDPowerDown(phy_handle_88q211x_t *dev);
 phy_status_t PHY_88Q211X_DisableLPSDPowerDown(phy_handle_88q211x_t *dev);
 
+phy_status_t PHY_88Q211X_WriteTrainingReg(phy_handle_88q211x_t *dev, bool eee, bool oam, uint8_t user_field);
+phy_status_t PHY_88Q211X_ReadTrainingReg(phy_handle_88q211x_t *dev, bool *eee, bool *oam, uint8_t *user_field);
+
 /* TODO: PTP functions */
 
 
