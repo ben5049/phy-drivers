@@ -135,13 +135,6 @@ phy_status_t PHY_88Q211X_GetLinkState(phy_handle_88q211x_t *dev, bool *linkup) {
 
     PHY_LOCK;
 
-    /* Powered down PHY can't have a link up */
-    if (dev->state == PHY_STATE_88Q211X_POWER_DOWN) {
-        if (linkup != NULL) *linkup = false;
-        dev->linkup = false;
-        goto end;
-    }
-
     /* Read link status register based on the link speed */
     if (dev->speed == PHY_SPEED_100M) {
 
@@ -174,10 +167,8 @@ phy_status_t PHY_88Q211X_GetLinkState(phy_handle_88q211x_t *dev, bool *linkup) {
 
     /* Update the device struct */
     if (linkup_internal) {
-        dev->state  = PHY_STATE_88Q211X_LINK_UP;
         dev->linkup = true;
     } else {
-        dev->state  = PHY_STATE_88Q211X_IDLE;
         dev->linkup = false;
     }
 
@@ -522,7 +513,7 @@ phy_status_t PHY_88Q211X_ReadTemperature(phy_handle_88q211x_t *dev, float *temp,
     PHY_LOCK;
 
     /* Filter out all the conditions that would invalidate the temperature reading. TODO: Check if reading the temperature in power down is possible */
-    if (dev->temp_sensor_enabled && (dev->state != PHY_STATE_88Q211X_UNCONFIGURED) && (dev->state != PHY_STATE_88Q211X_POWER_DOWN)) {
+    if (dev->temp_sensor_enabled && (dev->initialised)) {
 
         /* Read the temperature register */
         status = PHY_READ_REG(dev, PHY_88Q211X_DEV_TEMP_4, PHY_88Q211X_REG_TEMP_4, &reg_data);
@@ -645,7 +636,6 @@ phy_status_t PHY_88Q211X_EnableIEEEPowerDown(phy_handle_88q211x_t *dev) {
     }
 
     /* Update the device struct */
-    dev->state  = PHY_STATE_88Q211X_POWER_DOWN;
     dev->linkup = false;
 
 end:
@@ -682,9 +672,6 @@ phy_status_t PHY_88Q211X_DisableIEEEPowerDown(phy_handle_88q211x_t *dev) {
         status    = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_PCS_CTRL_1, PHY_88Q211X_REG_PCS_CTRL_1, reg_data);
         PHY_CHECK_END(status);
     }
-
-    /* Update the device struct */
-    dev->state = PHY_STATE_88Q211X_IDLE;
 
 end:
     PHY_UNLOCK;

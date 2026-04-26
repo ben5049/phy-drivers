@@ -92,6 +92,10 @@ phy_status_t PHY_DP83867_Init(phy_handle_dp83867_t *dev, const phy_config_dp8386
 
 #if PHY_CHECKS_ENABLED
 
+    /* Check the device hasn't already been initialised. Note this may cause an unintended error if the struct uses non-zeroed memory. */
+    if (dev->initialised) status = PHY_ALREADY_CONFIGURED;
+    PHY_CHECK_RET(status);
+
     /* Check config parameters. TODO: More */
     if (config->phy_addr > 31) status = PHY_INVALID_PHY_ADDR_ERROR;
     if (config->variant != PHY_VARIANT_DP83867) status = PHY_INVALID_VARIANT_ERROR;
@@ -113,12 +117,13 @@ phy_status_t PHY_DP83867_Init(phy_handle_dp83867_t *dev, const phy_config_dp8386
 #endif
 
     /* Take the mutex */
-    status = callbacks->callback_take_mutex(config->timeout, dev->callback_context);
+    status = callbacks->callback_take_mutex(config->timeout, callback_context);
     PHY_CHECK_RET(status);
 
     /* Assign the inputs */
-    dev->config    = *config;
-    dev->callbacks = callbacks;
+    dev->config           = *config;
+    dev->callbacks        = callbacks;
+    dev->callback_context = callback_context;
 
     /* Set fixed attributes */
     dev->speed         = PHY_SPEED_UNKNOWN;
@@ -142,6 +147,9 @@ phy_status_t PHY_DP83867_Init(phy_handle_dp83867_t *dev, const phy_config_dp8386
      *  - Disable output clock
      *  - Enable 1ns clock skew
      */
+
+    /* Update device struct */
+    dev->initialised = true;
 
 end:
 

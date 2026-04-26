@@ -55,6 +55,7 @@ extern "C" {
     PHY_CHECK_MEMBER_SIZE(instance, base, member);
 
 #define PHY_CHECK_HANDLE_MEMBERS(phy_handle_type)                                            \
+    PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, initialised);         \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, speed);               \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, duplex);              \
     PHY_CHECK_MEMBER_COMPATIBILITY(phy_handle_type, phy_handle_base_t, autoneg);             \

@@ -161,7 +161,7 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
 #if PHY_CHECKS_ENABLED
 
     /* Check the device hasn't already been initialised. Note this may cause an unintended error if the struct uses non-zeroed memory. */
-    if (dev->state != PHY_STATE_88Q211X_UNCONFIGURED) status = PHY_ALREADY_CONFIGURED;
+    if (dev->initialised) status = PHY_ALREADY_CONFIGURED;
     PHY_CHECK_RET(status);
 
     /* Check config parameters. TODO: More */
@@ -190,12 +190,13 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
 #endif
 
     /* Take the mutex */
-    status = callbacks->callback_take_mutex(config->timeout, dev->callback_context);
+    status = callbacks->callback_take_mutex(config->timeout, callback_context);
     PHY_CHECK_RET(status);
 
     /* Assign the inputs */
-    dev->config    = *config;
-    dev->callbacks = callbacks;
+    dev->config           = *config;
+    dev->callbacks        = callbacks;
+    dev->callback_context = callback_context;
 
     /* Reset parameters */
     dev->speed               = PHY_SPEED_UNKNOWN;
@@ -204,7 +205,6 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     dev->duplex              = PHY_FULL_DUPLEX;
     dev->linkup              = false;
     dev->temp_sensor_enabled = false;
-    dev->callback_context    = callback_context;
     PHY_88Q211X_ResetEventCounters(dev);
 
 
@@ -282,8 +282,8 @@ phy_status_t PHY_88Q211X_Init(phy_handle_88q211x_t *dev, const phy_config_88q211
     status = PHY_88Q211X_EnableAutoPolarityCorrection(dev);
     PHY_CHECK_END(status);
 
-    /* Move from unconfigured to IDLE */
-    if (dev->state == PHY_STATE_88Q211X_UNCONFIGURED) dev->state = PHY_STATE_88Q211X_IDLE;
+    /* Update device struct */
+    dev->initialised = true;
 
 end:
 

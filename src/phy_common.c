@@ -188,3 +188,63 @@ phy_status_t PHY_ReadTemperature(void *dev, float *temp, bool *valid) {
 
     return status;
 }
+
+
+phy_status_t PHY_Sleep(void *dev) {
+
+    phy_status_t status = PHY_OK;
+
+    switch (((phy_handle_base_t *) dev)->config.variant) {
+
+        case (PHY_VARIANT_88Q2110):
+        case (PHY_VARIANT_88Q2112):
+            status = PHY_88Q211X_EnableIEEEPowerDown(dev);
+            break;
+
+        case (PHY_VARIANT_LAN8670):
+        case (PHY_VARIANT_LAN8671):
+        case (PHY_VARIANT_LAN8672):
+            status = PHY_OK; /* TODO: implement */
+            break;
+
+        case (PHY_VARIANT_DP83867):
+            status = PHY_OK; /* TODO: implement */
+            break;
+
+        default:
+            status = PHY_PARAMETER_ERROR;
+            break;
+    }
+
+    return status;
+}
+
+
+phy_status_t PHY_Wake(void *dev) {
+
+    phy_status_t status = PHY_OK;
+
+    switch (((phy_handle_base_t *) dev)->config.variant) {
+
+        case (PHY_VARIANT_88Q2110):
+        case (PHY_VARIANT_88Q2112):
+            status = PHY_88Q211X_DisableIEEEPowerDown(dev);
+            break;
+
+        case (PHY_VARIANT_LAN8670):
+        case (PHY_VARIANT_LAN8671):
+        case (PHY_VARIANT_LAN8672):
+            status = PHY_OK; /* TODO: implement */
+            break;
+
+        case (PHY_VARIANT_DP83867):
+            status = PHY_OK; /* TODO: implement */
+            break;
+
+        default:
+            status = PHY_PARAMETER_ERROR;
+            break;
+    }
+
+    return status;
+}

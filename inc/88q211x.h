@@ -26,13 +26,6 @@ extern "C" {
 
 
 typedef enum {
-    PHY_STATE_88Q211X_UNCONFIGURED = 0,
-    PHY_STATE_88Q211X_IDLE,
-    PHY_STATE_88Q211X_POWER_DOWN,
-    PHY_STATE_88Q211X_LINK_UP,
-} phy_state_88q211x_t;
-
-typedef enum {
     PHY_CABLE_STATE_88Q211X_NOT_STARTED,
     PHY_CABLE_STATE_88Q211X_TERMINATED,
     PHY_CABLE_STATE_88Q211X_SHORT,
@@ -83,6 +76,7 @@ typedef struct {
 typedef struct {
 
     /* Common attributes */
+    bool                   initialised;
     phy_speed_t            speed;
     phy_duplex_t           duplex;
     bool                   autoneg;
@@ -95,7 +89,6 @@ typedef struct {
     /* PHY Specific attributes */
     phy_config_88q211x_t         config;
     phy_event_counters_88q211x_t events;
-    phy_state_88q211x_t          state;
 
 } phy_handle_88q211x_t;
 

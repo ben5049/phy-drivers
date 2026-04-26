@@ -56,6 +56,7 @@ typedef struct {
 typedef struct {
 
     /* Common attributes */
+    bool                   initialised;
     phy_speed_t            speed;
     phy_duplex_t           duplex;
     bool                   autoneg;

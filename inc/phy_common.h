@@ -59,6 +59,7 @@ typedef enum {
     PHY_INVALID_REGISTER_CONTENT_ERROR,
     PHY_UNKNOWN_INTERRUPT_ERROR,
     PHY_FAULT_DETECTED,
+    PHY_SW_DEADLOCK,
 } phy_status_t;
 
 typedef enum {
@@ -159,6 +160,7 @@ typedef struct {
 } phy_config_base_t;
 
 typedef struct {
+    bool                   initialised;
     phy_speed_t            speed;
     phy_duplex_t           duplex;
     bool                   autoneg;
@@ -180,6 +182,9 @@ phy_status_t PHY_GetLinkState(void *dev, bool *linkup);
 
 phy_status_t PHY_EnableTemperatureSensor(void *dev);
 phy_status_t PHY_ReadTemperature(void *dev, float *temp, bool *valid);
+
+phy_status_t PHY_Sleep(void *dev);
+phy_status_t PHY_Wake(void *dev);
 
 
 #ifdef __cplusplus
