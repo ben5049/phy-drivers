@@ -24,6 +24,7 @@ extern "C" {
 #define PHY_88Q211X_OUI          (0x100158)
 #define PHY_88Q211X_MODEL_NUMBER (0x18)
 
+#define PHY_88Q211X_VCT_LENGTH   (500) /* Virtual cable test can take up to 500ms */
 
 typedef enum {
     PHY_CABLE_STATE_88Q211X_NOT_STARTED,
@@ -125,6 +126,7 @@ phy_status_t PHY_88Q211X_GetPolarity(phy_handle_88q211x_t *dev, bool *normal);
 
 phy_status_t PHY_88Q211X_StartVCT(phy_handle_88q211x_t *dev);
 phy_status_t PHY_88Q211X_GetVCTResults(phy_handle_88q211x_t *dev, phy_cable_state_88q211x_t *cable_state, uint32_t *maximum_peak_distance);
+phy_status_t PHY_88Q211X_StopVCT(phy_handle_88q211x_t *dev);
 
 phy_status_t PHY_88Q211X_CheckFaults(phy_handle_88q211x_t *dev, phy_fault_t *fault);
 

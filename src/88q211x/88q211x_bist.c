@@ -13,6 +13,7 @@
 #include "88q211x_regs.h"
 
 
+/* Enables the packet generator in burst mode */
 /* TODO: Take configuration options */
 phy_status_t PHY_88Q211X_EnablePacketGenerator(phy_handle_88q211x_t *dev) {
 
@@ -26,10 +27,16 @@ phy_status_t PHY_88Q211X_EnablePacketGenerator(phy_handle_88q211x_t *dev) {
     /* Enable the packet generator */
     reg_data |= 0xff00; /* Set the burst size to 255 */
     reg_data |= PHY_88Q211X_PACKET_GEN_EN;
-    reg_data |= PHY_88Q211X_PACKET_GEN_TRANSMIT;
+    reg_data |= PHY_88Q211X_PACKET_GEN_SC_CTRL;
 
     /* Write the new current packet generator state */
     status = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_GENERATOR_CTRL, reg_data);
+    PHY_CHECK_RET(status);
+
+    /* Trigger the packet generator */
+    /* TODO: Turn into transmit burst function? */
+    reg_data &= ~PHY_88Q211X_PACKET_GEN_TRANSMIT;
+    status    = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_PACKET_GENERATOR_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_GENERATOR_CTRL, reg_data);
     PHY_CHECK_RET(status);
 
     return status;
@@ -68,12 +75,12 @@ phy_status_t PHY_88Q211X_EnablePacketChecker(phy_handle_88q211x_t *dev) {
     /* Return early if the packet checker is already enabled */
     if (reg_data & PHY_88Q211X_PACKET_CHECK_EN) return status;
 
-    /* Step 1: Start the counter */
-    reg_data |= PHY_88Q211X_PACKET_CHECK_SAMPLE;
+    /* Step 1: Start the packet checker */
+    reg_data |= PHY_88Q211X_PACKET_CHECK_EN;
     status    = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, reg_data);
     PHY_CHECK_RET(status);
 
-    /* Step 2: Start the packet checker */
+    /* Step 2: Start the counter */
     reg_data |= PHY_88Q211X_PACKET_CHECK_SAMPLE;
     status    = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_PACKET_CHECKER_CTRL, PHY_88Q211X_REG_1000BASE_T1_PACKET_CHECKER_CTRL, reg_data);
     PHY_CHECK_RET(status);
@@ -183,6 +190,8 @@ phy_status_t PHY_88Q211X_GetSQI(phy_handle_88q211x_t *dev, uint8_t *sqi) {
 
     phy_status_t status   = PHY_OK;
     uint16_t     reg_data = 0;
+    uint8_t      sqi_internal;
+    int32_t      sqi_offset;
 
     PHY_LOCK;
 
@@ -194,37 +203,53 @@ phy_status_t PHY_88Q211X_GetSQI(phy_handle_88q211x_t *dev, uint8_t *sqi) {
         PHY_CHECK_END(status);
 
         /* Extract the SQI and normalise to be between 0 and 100 */
-        *sqi = (((reg_data & PHY_88Q211X_100BASE_T1_SQI_MASK) >> PHY_88Q211X_100BASE_T1_SQI_SHIFT) * 100) / 15;
+        sqi_internal = (((reg_data & PHY_88Q211X_100BASE_T1_SQI_MASK) >> PHY_88Q211X_100BASE_T1_SQI_SHIFT) * 100) / 15;
     }
 
-    /* 1000BASE-T1 Uses the general SQI register */
+    /* 1000BASE-T1 Uses the general SQI register
+     * This is reported as an error count between 0 and 1023 */
     else if (dev->speed == PHY_SPEED_1G) {
 
-        /* Read the SQI register */
-        status = PHY_READ_REG(dev, PHY_88Q211X_DEV_SQI, PHY_88Q211X_REG_SQI, &reg_data);
+        /* Read the 100BASE-T1 receiver status register */
+        status = PHY_READ_REG(dev, PHY_88Q211X_DEV_1000BASE_T1_SQI, PHY_88Q211X_REG_1000BASE_T1_SQI, &reg_data);
         PHY_CHECK_END(status);
 
-        /* Register should contain only 10-bit number */
-        if (reg_data > 1023) status = PHY_INVALID_REGISTER_CONTENT_ERROR;
-        PHY_CHECK_END(status);
-
-        /* Normalise SQI to be between 0 and 100 */
-        *sqi = ((uint32_t) reg_data * 100) / 1023;
+        /* Extract the SQI and normalise to be between 0 and 100 */
+        sqi_internal = (((reg_data & PHY_88Q211X_1000BASE_T1_SQI_MASK) >> PHY_88Q211X_1000BASE_T1_SQI_SHIFT) * 100) / 15;
     }
 
     /* No speed set, PHY unconfigured */
     else {
-        *sqi = 0;
+        sqi_internal = 0;
+        goto end;
     }
 
+    /* Read the SQI register */
+    status = PHY_READ_REG(dev, PHY_88Q211X_DEV_SQI, PHY_88Q211X_REG_SQI, &reg_data);
+    PHY_CHECK_END(status);
+
+    /* Register should contain only 10-bit number */
+    if (reg_data > 1023) status = PHY_INVALID_REGISTER_CONTENT_ERROR;
+    PHY_CHECK_END(status);
+
+    /* Use the averaged accumulative symbol slicer errors to give a more accurate SQI */
+    sqi_offset = 1023 - reg_data;
+    sqi_offset = sqi_internal - ((sqi_offset * 100) / 1023);
+    sqi_offset = sqi_offset / 2;
+    sqi_offset = CONSTRAIN(sqi_offset, 0, 100 / 16);
+
+    sqi_internal -= MIN(sqi_internal, sqi_offset);
+
 end:
+
+    *sqi = sqi_internal;
 
     PHY_UNLOCK;
     return status;
 }
 
 
-phy_status_t PHY_88Q211X_Start100MBIST(phy_handle_88q211x_t *dev) {
+phy_status_t PHY_88Q211X_Start1000MBIST(phy_handle_88q211x_t *dev) {
 
     phy_status_t status = PHY_OK;
 
@@ -249,7 +274,7 @@ end:
 }
 
 
-phy_status_t PHY_88Q211X_Stop100MBIST(phy_handle_88q211x_t *dev) {
+phy_status_t PHY_88Q211X_Stop1000MBIST(phy_handle_88q211x_t *dev) {
 
     phy_status_t status = PHY_OK;
 
@@ -266,7 +291,7 @@ end:
 }
 
 
-phy_status_t PHY_88Q211X_Get100MBISTResults(phy_handle_88q211x_t *dev, bool *error) {
+phy_status_t PHY_88Q211X_Get1000MBISTResults(phy_handle_88q211x_t *dev, bool *error) {
 
     phy_status_t status           = PHY_OK;
     uint16_t     reg_data         = 0;
@@ -284,16 +309,16 @@ phy_status_t PHY_88Q211X_Get100MBISTResults(phy_handle_88q211x_t *dev, bool *err
         PHY_CHECK_END(status);
 
         /* Check if all packets have been generated (enable self clears) */
-        if (!(reg_data & PHY_88Q211X_PACKET_GEN_EN)) {
+        if (reg_data & PHY_88Q211X_PACKET_GEN_TRANSMIT) {
             done = true;
         } else {
-            dev->callbacks->callback_delay_ms(dev->config.timeout / 10, dev->callback_context);
+            PHY_DELAY_MS(dev->config.timeout / 10);
         }
     }
 
     /* Timed out */
     if (!done) {
-        status = PHY_88Q211X_Stop100MBIST(dev);
+        status = PHY_88Q211X_Stop1000MBIST(dev);
         PHY_CHECK_END(status);
         status = PHY_TIMEOUT;
         goto end;
@@ -309,7 +334,7 @@ phy_status_t PHY_88Q211X_Get100MBISTResults(phy_handle_88q211x_t *dev, bool *err
     /* TODO: Calculate the error percentage */
 
     /* Stop the BIST */
-    status = PHY_88Q211X_Stop100MBIST(dev);
+    status = PHY_88Q211X_Stop1000MBIST(dev);
     PHY_CHECK_END(status);
 
 end:
@@ -336,10 +361,14 @@ phy_status_t PHY_88Q211X_StartVCT(phy_handle_88q211x_t *dev) {
     PHY_CHECK_END(status);
 
     /* Step 2: Fix incoming ADC sign bit (register 3.FEC3 bit 13 to 1). Note that this bit isn't described in the datasheet's registers section! */
+    /* Step 2.5: Set to full amplitude (bits 11:7) and full pulse width (bits 1:0) */
     status = PHY_READ_REG(dev, PHY_88Q211X_DEV_TDR_CTRL, PHY_88Q211X_REG_TDR_CTRL, &reg_data);
     PHY_CHECK_END(status);
     reg_data |= 1 << 13;
-    status    = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_TDR_CTRL, PHY_88Q211X_REG_TDR_CTRL, reg_data);
+    reg_data |= (0x1f << 7) | 0x03;
+    // reg_data |= PHY_88Q211X_TDR_EN;
+    // reg_data &= ~PHY_88Q211X_TDR_START;
+    status = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_TDR_CTRL, PHY_88Q211X_REG_TDR_CTRL, reg_data);
     PHY_CHECK_END(status);
 
     /* Step 3: Adjust threshold (register 3.FEC4 = 0x0F20). Note this register isn't described in the datasheet's registers section! */
@@ -355,11 +384,17 @@ phy_status_t PHY_88Q211X_StartVCT(phy_handle_88q211x_t *dev) {
     /* Step 5: Enable TDR function (register 3.FEC3 bit 14 to 1, self-clearing) */
     status = PHY_READ_REG(dev, PHY_88Q211X_DEV_TDR_CTRL, PHY_88Q211X_REG_TDR_CTRL, &reg_data);
     PHY_CHECK_END(status);
+    // reg_data |= PHY_88Q211X_TDR_START;
     reg_data |= PHY_88Q211X_TDR_EN;
     status    = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_TDR_CTRL, PHY_88Q211X_REG_TDR_CTRL, reg_data);
     PHY_CHECK_END(status);
 
-    /* TODO: Check if bit 12 needs to be set? "Start TDR Test" bit */
+    PHY_DELAY_MS(10);
+
+    reg_data |= PHY_88Q211X_TDR_START; /* TODO: Check if bit 12 needs to be set? "Start TDR Test" bit */
+    status    = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_TDR_CTRL, PHY_88Q211X_REG_TDR_CTRL, reg_data);
+    PHY_CHECK_END(status);
+
 end:
 
     PHY_UNLOCK;
@@ -394,7 +429,7 @@ phy_status_t PHY_88Q211X_GetVCTResults(phy_handle_88q211x_t *dev, phy_cable_stat
 
         /* Otherwise wait for the timeout period / 10 */
         else {
-            dev->callbacks->callback_delay_ms(dev->config.timeout / 10, dev->callback_context);
+            PHY_DELAY_MS(dev->config.timeout / 10);
         }
     }
 
@@ -427,16 +462,40 @@ phy_status_t PHY_88Q211X_GetVCTResults(phy_handle_88q211x_t *dev, phy_cable_stat
     }
 
     /* Check if the distance measurement is invalid */
-    if ((vct_distance < 40) && (vct_distance > 1023)) {
-        *maximum_peak_distance = UINT32_MAX;
+    if ((vct_distance < 40) || (vct_distance > 1023)) {
+        *maximum_peak_distance = 0;
     }
 
     /* If it is valid then compute the distance in mm */
     else {
-        *maximum_peak_distance = (vct_distance * 129.31) - 5043.09;
+        *maximum_peak_distance = (uint32_t) ((vct_distance * 129.31) - 5043.09);
     }
 
 end:
+
+    PHY_UNLOCK;
+    return status;
+}
+
+
+/* Return the PHY back to the state it was before PHY_88Q211X_StartVCT() */
+phy_status_t PHY_88Q211X_StopVCT(phy_handle_88q211x_t *dev) {
+
+    phy_status_t status = PHY_OK;
+
+    PHY_LOCK;
+
+    uint16_t reg_data;
+
+    /* Un-ignore wire activity (register 3.FEC9 bit 7 to 0). Note this register isn't described in the datasheet's registers section! */
+    status = PHY_READ_REG(dev, 0x03, 0xfec9, &reg_data);
+    PHY_CHECK_END(status);
+    reg_data &= ~(1 << 7);
+    status    = PHY_WRITE_REG(dev, 0x03, 0xfec9, reg_data);
+    PHY_CHECK_END(status);
+
+end:
+
     PHY_UNLOCK;
     return status;
 }

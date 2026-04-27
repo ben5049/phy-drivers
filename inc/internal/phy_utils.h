@@ -20,6 +20,11 @@ extern "C" {
 #include "phy_common.h"
 
 
+#define MIN(a, b)                 ((a) < (b) ? (a) : (b))
+#define MAX(a, b)                 ((a) > (b) ? (a) : (b))
+#define CONSTRAIN(amt, low, high) ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
+#define ABS(a)                    ((a) > 0 ? (a) : -(a))
+
 #define PHY_CHECK_RET(status)                \
     do {                                     \
         if (status != PHY_OK) return status; \
