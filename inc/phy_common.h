@@ -38,6 +38,8 @@ extern "C" {
 #define PHY_PLCA_COORDINATOR_ID     (0)
 #define PHY_PLCA_DEFAULT_NODE_COUNT (16) /* Default maximum number of devices on a multidrop bus. Must be the same for all devices. */
 
+#define PHY_SQI_INVALID             (UINT8_MAX)
+
 
 typedef enum {
     PHY_OK      = 0,
@@ -179,6 +181,7 @@ phy_status_t PHY_EnableInterrupts(void *dev);
 phy_status_t PHY_ProcessInterrupt(void *dev);
 
 phy_status_t PHY_GetLinkState(void *dev, bool *linkup);
+phy_status_t PHY_GetSQI(void *dev, uint8_t *sqi);
 
 phy_status_t PHY_EnableTemperatureSensor(void *dev);
 phy_status_t PHY_ReadTemperature(void *dev, float *temp, bool *valid);
