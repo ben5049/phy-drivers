@@ -146,8 +146,7 @@ phy_status_t PHY_GetSQI(void *dev, uint8_t *sqi) {
         case (PHY_VARIANT_LAN8670):
         case (PHY_VARIANT_LAN8671):
         case (PHY_VARIANT_LAN8672):
-            *sqi   = PHY_SQI_INVALID;
-            status = PHY_OK; /* TODO: implement */
+            status = PHY_LAN867X_GetSQI(dev, sqi);
             break;
 
         case (PHY_VARIANT_DP83867):
@@ -237,7 +236,7 @@ phy_status_t PHY_Sleep(void *dev) {
         case (PHY_VARIANT_LAN8670):
         case (PHY_VARIANT_LAN8671):
         case (PHY_VARIANT_LAN8672):
-            status = PHY_OK; /* TODO: implement */
+            status = PHY_LAN867X_EnableIEEEPowerDown(dev);
             break;
 
         case (PHY_VARIANT_DP83867):
@@ -267,7 +266,7 @@ phy_status_t PHY_Wake(void *dev) {
         case (PHY_VARIANT_LAN8670):
         case (PHY_VARIANT_LAN8671):
         case (PHY_VARIANT_LAN8672):
-            status = PHY_OK; /* TODO: implement */
+            status = PHY_LAN867X_DisableIEEEPowerDown(dev);
             break;
 
         case (PHY_VARIANT_DP83867):

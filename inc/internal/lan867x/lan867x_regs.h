@@ -314,11 +314,32 @@ enum phy_lan867x_misc_dev_e {
 #define LAN867X_MISC_OT                      (1 << 6)
 #define LAN867X_MISC_IWDTO                   (1 << 5)
 
+#define LAN867X_SQI_RST                      (1 << 15)
+#define LAN867X_SQI_EN                       (1 << 14)
+#define LAN867X_SQI_ERR                      (1 << 7)
+#define LAN867X_SQI_VLD                      (1 << 6)
+#define LAN867X_SQI_VAL_SHIFT                (3)
+#define LAN867X_SQI_VAL_MASK                 (0x7 << LAN867X_SQI_VAL_SHIFT)
+#define LAN867X_SQI_ERRC_SHIFT               (0)
+#define LAN867X_SQI_ERRC_MASK                (0x7 << LAN867X_SQI_ERRC_SHIFT)
+#define LAN867X_SQI_TOID_SHIFT               (4)
+#define LAN867X_SQI_TOID_MASK                (0xff << LAN867X_SQI_TOID_SHIFT)
+#define LAN867X_SQI_INTTHR_SHIFT             (8)
+#define LAN867X_SQI_INTTHR_MASK              (0x1f << LAN867X_SQI_INTTHR_SHIFT)
+
 #define LAN867X_MISC_IR_MODE                 (0x0002)
 
 #define LAN867X_PLCA_EN                      (1 << 15)
 #define LAN867X_PLCA_NCNT_SHIFT              (8)
 #define LAN867X_PLCA_PST                     (1 << 15) /* PLCA Status: BEACON being regularly transmitted or received */
+
+
+#define LAN867X_DCQ_SQI_UDP                  (1 << 15)
+#define LAN867X_DCQ_SQI_SHIFT                (0)
+#define LAN867X_DCQ_SQI_MASK                 (0x7 << LAN867X_DCQ_SQI_SHIFT)
+#define LAN867X_DCQ_SQIP_UDP                 (1 << 15)
+#define LAN867X_DCQ_SQIP_SHIFT               (3)
+#define LAN867X_DCQ_SQIP_MASK                (0x1f << LAN867X_DCQ_SQIP_SHIFT)
 
 
 #ifdef __cplusplus

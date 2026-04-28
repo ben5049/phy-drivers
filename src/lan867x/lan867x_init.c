@@ -128,8 +128,8 @@ static phy_status_t PHY_LAN867X_SoftwareReset(phy_handle_lan867x_t *dev) {
     return status;
 }
 
-/* Write the configuration to the PHY for EMI and standards compliance, as well as to enable SQI */
-static phy_status_t PHY_LAN867X_ApplyConfigEnableSQI(phy_handle_lan867x_t *dev) {
+/* Write the configuration to the PHY for EMI and standards compliance */
+static phy_status_t PHY_LAN867X_ApplyConfig(phy_handle_lan867x_t *dev) {
 
     phy_status_t status   = PHY_OK;
     uint16_t     reg_data = 0;
@@ -261,8 +261,6 @@ static phy_status_t PHY_LAN867X_ApplyConfigEnableSQI(phy_handle_lan867x_t *dev) 
             status    = PHY_WRITE_REG(dev, PHY_LAN867X_DEV_LSCTL_REV_D, PHY_LAN867X_REG_LSCTL_REV_D, reg_data);
             PHY_CHECK_RET(status);
 
-            /* TODO: Enable SQI */
-
             break;
 
         /* Old versions with no configuration provided */
@@ -284,6 +282,50 @@ static phy_status_t PHY_LAN867X_ApplyConfigEnableSQI(phy_handle_lan867x_t *dev) 
 
     return status;
 }
+
+
+static phy_status_t PHY_LAN867X_SQIEnable(phy_handle_lan867x_t *dev) {
+
+    phy_status_t status = PHY_OK;
+    uint16_t     reg_data;
+
+    /* Enable SQI on older versions */
+    if (dev->silicon_revision < PHY_LAN867X_SI_REV_D0) {
+
+        /* Write the SQI transmit opportunity ID */
+        status = PHY_READ_REG(dev, PHY_LAN867X_DEV_SQICFG0, PHY_LAN867X_REG_SQICFG0, &reg_data);
+        PHY_CHECK_RET(status);
+        reg_data = ((dev->config.plca_enabled ? 0xff : ((dev->role == PHY_ROLE_MASTER) ? 0xff : 0x00)) << LAN867X_SQI_TOID_SHIFT) & LAN867X_SQI_TOID_MASK;
+        status   = PHY_WRITE_REG(dev, PHY_LAN867X_DEV_SQICFG0, PHY_LAN867X_REG_SQICFG0, reg_data);
+        PHY_CHECK_RET(status);
+
+        /* Put the PHY in SQI polling mode. TODO: allow interrupts as well? */
+        status = PHY_READ_REG(dev, PHY_LAN867X_DEV_SQICFG2, PHY_LAN867X_REG_SQICFG2, &reg_data);
+        PHY_CHECK_RET(status);
+        reg_data = (0x1f << LAN867X_SQI_INTTHR_SHIFT) & LAN867X_SQI_INTTHR_MASK;
+        status   = PHY_WRITE_REG(dev, PHY_LAN867X_DEV_SQICFG2, PHY_LAN867X_REG_SQICFG2, reg_data);
+        PHY_CHECK_RET(status);
+
+        /* Write to the SQI control register */
+        status = PHY_READ_REG(dev, PHY_LAN867X_DEV_SQICTL, PHY_LAN867X_REG_SQICTL, &reg_data);
+        PHY_CHECK_RET(status);
+        reg_data |= LAN867X_SQI_EN;
+        status    = PHY_WRITE_REG(dev, PHY_LAN867X_DEV_SQICTL, PHY_LAN867X_REG_SQICTL, reg_data);
+        PHY_CHECK_RET(status);
+    }
+
+    /* Silicon revision D0 does SQI config differently */
+    else {
+
+        /* Write the DCQ transmit opportunity ID */
+        reg_data = dev->config.plca_enabled ? 0xff : ((dev->role == PHY_ROLE_MASTER) ? 0xff : 0x00);
+        status   = PHY_WRITE_REG(dev, PHY_LAN867X_DEV_DCQ_TOID_REV_D, PHY_LAN867X_REG_DCQ_TOID_REV_D, reg_data);
+        PHY_CHECK_RET(status);
+    }
+
+    return status;
+}
+
 
 /* Enable physical layer collision avoidance (PLCA) */
 static phy_status_t PHY_LAN867X_PLCAEnable(phy_handle_lan867x_t *dev) {
@@ -370,7 +412,11 @@ phy_status_t PHY_LAN867X_Init(phy_handle_lan867x_t *dev, const phy_config_lan867
     PHY_CHECK_END(status);
 
     /* Apply the arcane config and enable SQI monitoring */
-    status = PHY_LAN867X_ApplyConfigEnableSQI(dev);
+    status = PHY_LAN867X_ApplyConfig(dev);
+    PHY_CHECK_END(status);
+
+    /* Enable SQI measurement */
+    status = PHY_LAN867X_SQIEnable(dev);
     PHY_CHECK_END(status);
 
     /* Enable PLCA (should normally be on) */

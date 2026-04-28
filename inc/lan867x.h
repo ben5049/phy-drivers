@@ -109,6 +109,8 @@ phy_status_t PHY_LAN867X_GetLinkState(phy_handle_lan867x_t *dev, bool *linkup);
 phy_status_t PHY_LAN867X_EnableIEEEPowerDown(phy_handle_lan867x_t *dev);
 phy_status_t PHY_LAN867X_DisableIEEEPowerDown(phy_handle_lan867x_t *dev);
 
+phy_status_t PHY_LAN867X_GetSQI(phy_handle_lan867x_t *dev, uint8_t *sqi);
+
 
 #ifdef __cplusplus
 }

@@ -180,6 +180,11 @@ phy_status_t PHY_LAN867X_GetLinkState(phy_handle_lan867x_t *dev, bool *linkup) {
         linkup_internal = reg_data & LAN867X_PLCA_PST;
     }
 
+    /* The master should always count as having its link up */
+    else if (dev->config.plca_enabled && (dev->role == PHY_ROLE_MASTER)) {
+        linkup_internal = true;
+    }
+
     /* No PLCA */
     else {
         linkup_internal = false;
@@ -248,6 +253,85 @@ phy_status_t PHY_LAN867X_DisableIEEEPowerDown(phy_handle_lan867x_t *dev) {
     }
 
 end:
+
+    PHY_UNLOCK;
+    return status;
+}
+
+
+phy_status_t PHY_LAN867X_GetSQI(phy_handle_lan867x_t *dev, uint8_t *sqi) {
+
+    phy_status_t status = PHY_OK;
+    uint16_t     reg_data;
+    uint8_t      sqi_internal = PHY_SQI_INVALID;
+
+    PHY_LOCK;
+
+    /* Use the legacy SQI measurement */
+    if (dev->silicon_revision < PHY_LAN867X_SI_REV_D0) {
+
+        /* Read the SQI status 1 register */
+        status = PHY_READ_REG(dev, PHY_LAN867X_DEV_SQISTS0, PHY_LAN867X_REG_SQISTS0, &reg_data);
+        PHY_CHECK_END(status);
+
+        /* An error occured */
+        if (reg_data & LAN867X_SQI_ERR) {
+
+            /* Set the output to invalid */
+            sqi_internal = PHY_SQI_INVALID;
+
+            // TODO: extract the error code?
+
+            /* Reset the SQI block */
+            status = PHY_READ_REG(dev, PHY_LAN867X_DEV_SQICTL, PHY_LAN867X_REG_SQICTL, &reg_data);
+            PHY_CHECK_RET(status);
+            reg_data &= ~LAN867X_SQI_EN;
+            status    = PHY_WRITE_REG(dev, PHY_LAN867X_DEV_SQICTL, PHY_LAN867X_REG_SQICTL, reg_data);
+            PHY_CHECK_RET(status);
+            reg_data |= LAN867X_SQI_EN;
+            status    = PHY_WRITE_REG(dev, PHY_LAN867X_DEV_SQICTL, PHY_LAN867X_REG_SQICTL, reg_data);
+            PHY_CHECK_RET(status);
+        }
+
+        /* The reading is valid, normalise to be between 0 and 100 */
+        else if (reg_data & LAN867X_SQI_VLD) {
+            sqi_internal = (reg_data & LAN867X_SQI_VAL_MASK) >> LAN867X_SQI_VAL_SHIFT;
+            sqi_internal = ((uint16_t) sqi_internal * 100) / 7;
+        }
+
+        /* No error, also not valid */
+        else {
+            sqi_internal = PHY_SQI_INVALID;
+        }
+    }
+
+    /* Use the dynamic channel quality SQI */
+    else {
+
+        /* Read the signal quality index plus register */
+        status = PHY_READ_REG(dev, PHY_LAN867X_DEV_DCQ_SQIP_REV_D, PHY_LAN867X_REG_DCQ_SQIP_REV_D, &reg_data);
+        PHY_CHECK_RET(status);
+
+        /* 32-level measurement ready */
+        if (reg_data & LAN867X_DCQ_SQIP_UDP) {
+            sqi_internal = (reg_data & LAN867X_DCQ_SQIP_MASK) >> LAN867X_DCQ_SQIP_SHIFT;
+            sqi_internal = ((uint16_t) sqi_internal * 100) / 31;
+        }
+
+        /* Read the signal quality index register */
+        status = PHY_READ_REG(dev, PHY_LAN867X_DEV_DCQ_SQI_REV_D, PHY_LAN867X_REG_DCQ_SQI_REV_D, &reg_data);
+        PHY_CHECK_RET(status);
+
+        /* No 32-level measurement, but 8-level measurement is ready */
+        if ((sqi_internal == PHY_SQI_INVALID) && (reg_data & LAN867X_DCQ_SQI_UDP)) {
+            sqi_internal = (reg_data & LAN867X_DCQ_SQI_MASK) >> LAN867X_DCQ_SQI_SHIFT;
+            sqi_internal = ((uint16_t) sqi_internal * 100) / 7;
+        }
+    }
+
+end:
+
+    *sqi = sqi_internal;
 
     PHY_UNLOCK;
     return status;
