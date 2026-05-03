@@ -45,3 +45,34 @@ end:
     PHY_UNLOCK;
     return status;
 }
+
+
+phy_status_t PHY_DP83867_SetSpeed(phy_handle_dp83867_t *dev, phy_speed_t speed) {
+
+    phy_status_t status = PHY_NOT_IMPLEMENTED_ERROR;
+
+    PHY_LOCK;
+
+    // TODO: Implement
+
+end:
+
+    PHY_UNLOCK;
+    return status;
+}
+
+
+phy_status_t PHY_DP83867_GetSpeed(phy_handle_dp83867_t *dev, phy_speed_t *speed) {
+
+    phy_status_t status = PHY_NOT_IMPLEMENTED_ERROR;
+
+    PHY_LOCK;
+
+    // TODO: Implement
+    *speed = PHY_SPEED_1G;
+
+end:
+
+    PHY_UNLOCK;
+    return status;
+}

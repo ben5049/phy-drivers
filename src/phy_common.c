@@ -163,6 +163,66 @@ phy_status_t PHY_GetSQI(void *dev, uint8_t *sqi) {
 }
 
 
+phy_status_t PHY_GetSpeed(void *dev, phy_speed_t *speed) {
+
+    phy_status_t status = PHY_OK;
+
+    switch (((phy_handle_base_t *) dev)->config.variant) {
+
+        case (PHY_VARIANT_88Q2110):
+        case (PHY_VARIANT_88Q2112):
+            status = PHY_88Q211X_GetSpeed(dev, speed);
+            break;
+
+        case (PHY_VARIANT_LAN8670):
+        case (PHY_VARIANT_LAN8671):
+        case (PHY_VARIANT_LAN8672):
+            *speed = PHY_SPEED_10M;
+            break;
+
+        case (PHY_VARIANT_DP83867):
+            status = PHY_DP83867_GetSpeed(dev, speed);
+            break;
+
+        default:
+            status = PHY_PARAMETER_ERROR;
+            break;
+    }
+
+    return status;
+}
+
+
+phy_status_t PHY_SetSpeed(void *dev, phy_speed_t speed) {
+
+    phy_status_t status = PHY_OK;
+
+    switch (((phy_handle_base_t *) dev)->config.variant) {
+
+        case (PHY_VARIANT_88Q2110):
+        case (PHY_VARIANT_88Q2112):
+            status = PHY_88Q211X_SetSpeed(dev, speed);
+            break;
+
+        /* Only 10 Mbps, no speed setting function */
+        case (PHY_VARIANT_LAN8670):
+        case (PHY_VARIANT_LAN8671):
+        case (PHY_VARIANT_LAN8672):
+            break;
+
+        case (PHY_VARIANT_DP83867):
+            status = PHY_DP83867_SetSpeed(dev, speed);
+            break;
+
+        default:
+            status = PHY_PARAMETER_ERROR;
+            break;
+    }
+
+    return status;
+}
+
+
 phy_status_t PHY_EnableTemperatureSensor(void *dev) {
 
     phy_status_t status = PHY_OK;

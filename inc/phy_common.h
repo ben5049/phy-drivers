@@ -25,6 +25,9 @@ extern "C" {
 #define UNUSED(x) ((void) (x))
 #endif
 
+#define PHY_SPEED_MBPS_TO_ENUM(mbps) (((mbps) == 10) ? PHY_SPEED_10M : (((mbps) == 100) ? PHY_SPEED_100M : (((mbps) == 1000) ? PHY_SPEED_1G : PHY_SPEED_INVALID)))
+#define PHY_SPEED_ENUM_TO_MBPS(mbps) (((mbps) == PHY_SPEED_10M) ? 10 : (((mbps) == PHY_SPEED_100M) ? 100 : (((mbps) == PHY_SPEED_1G) ? 1000 : PHY_SPEED_INVALID)))
+
 /* Enable and disable log statements */
 #ifndef PHY_LOGGING_ENABLED
 #define PHY_LOGGING_ENABLED (1)
@@ -182,6 +185,9 @@ phy_status_t PHY_ProcessInterrupt(void *dev);
 
 phy_status_t PHY_GetLinkState(void *dev, bool *linkup);
 phy_status_t PHY_GetSQI(void *dev, uint8_t *sqi);
+
+phy_status_t PHY_GetSpeed(void *dev, phy_speed_t *speed);
+phy_status_t PHY_SetSpeed(void *dev, phy_speed_t speed);
 
 phy_status_t PHY_EnableTemperatureSensor(void *dev);
 phy_status_t PHY_ReadTemperature(void *dev, float *temp, bool *valid);
