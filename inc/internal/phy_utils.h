@@ -5,8 +5,8 @@
  *      Author: bens1
  */
 
-#ifndef INC_PHY_UTILS_H_
-#define INC_PHY_UTILS_H_
+#ifndef INC_INTERNAL_PHY_UTILS_H_
+#define INC_INTERNAL_PHY_UTILS_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -101,4 +101,4 @@ uint32_t pack_oui(uint16_t oui_2_17, uint8_t oui_18_23);
 }
 #endif
 
-#endif /* INC_PHY_UTILS_H_ */
+#endif /* INC_INTERNAL_PHY_UTILS_H_ */

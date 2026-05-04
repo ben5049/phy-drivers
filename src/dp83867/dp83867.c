@@ -55,7 +55,7 @@ phy_status_t PHY_DP83867_SetSpeed(phy_handle_dp83867_t *dev, phy_speed_t speed) 
 
     // TODO: Implement
 
-end:
+    // end:
 
     PHY_UNLOCK;
     return status;
@@ -71,7 +71,7 @@ phy_status_t PHY_DP83867_GetSpeed(phy_handle_dp83867_t *dev, phy_speed_t *speed)
     // TODO: Implement
     *speed = PHY_SPEED_1G;
 
-end:
+    // end:
 
     PHY_UNLOCK;
     return status;

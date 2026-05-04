@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef INC_PHY_IO_H_
-#define INC_PHY_IO_H_
+#ifndef INC_INTERNAL_PHY_IO_H_
+#define INC_INTERNAL_PHY_IO_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -67,4 +67,4 @@ phy_status_t phy_write_reg(phy_handle_base_t *dev, uint8_t mmd_addr, uint16_t re
 }
 #endif
 
-#endif /* INC_PHY_IO_H_ */
+#endif /* INC_INTERNAL_PHY_IO_H_ */
