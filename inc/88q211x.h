@@ -24,7 +24,12 @@ extern "C" {
 #define PHY_88Q211X_OUI          (0x100158)
 #define PHY_88Q211X_MODEL_NUMBER (0x18)
 
-#define PHY_88Q211X_VCT_LENGTH   (500) /* Virtual cable test can take up to 500ms */
+#define PHY_88Q211X_VCT_LENGTH   (500)         /* Virtual cable test can take up to 500ms */
+
+#define PHY_88Q211X_T_PU_RESET   (4000000)     /* 4ms Valid power to RESETn de-asserted */
+#define PHY_88Q211X_T_RESET      (4000000)     /* 4ms Minimum reset pulse width during normal operation */
+#define PHY_88Q211X_T_RESET_MDIO (1000000 * 2) /* 1ms Minimum wait time from RESET de-assertion to first MDIO access. Empirically this seems to need to be longer */
+
 
 typedef enum {
     PHY_CABLE_STATE_88Q211X_NOT_STARTED,

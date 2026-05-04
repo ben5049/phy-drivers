@@ -24,6 +24,12 @@ extern "C" {
 #define PHY_DP83867_OUI          (0x080028)
 #define PHY_DP83867_MODEL_NUMBER (0x23)
 
+#define PHY_DP83867_RST_T1       (195000) /* 195us Post RESET stabilization time prior to MDC preamble for register accesses */
+#define PHY_DP83867_RST_T2       (120)    /* 120ns Hardware configuration latch-in time from the deassertion of RESET (either soft or hard) */
+#define PHY_DP83867_RST_T3       (64)     /* 64ns Hardware configuration pins transition to output drivers */
+#define PHY_DP83867_RST_T4       (1000)   /* 1us RESET pulse width  */
+
+
 /* Stores information about driver events */
 typedef struct {
 

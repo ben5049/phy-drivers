@@ -34,6 +34,11 @@ extern "C" {
 #define PHY_LAN867X_OUI                      (0x0f8000)
 #define PHY_LAN867X_MODEL_NUMBER             (0b010110)
 
+#define PHY_LAN867X_T_RSTIA                  (5000) /* 5us RESET_N input assertion time */
+#define PHY_LAN867X_T_CSS                    (200)  /* 200ns Configuration strap setup before RESET_N negation */
+#define PHY_LAN867X_T_CSH                    (10)   /* 10ns Configuration strap hold after RESET_N negation */
+
+
 /* Stores information about driver events */
 typedef struct {
 
