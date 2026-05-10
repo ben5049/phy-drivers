@@ -26,6 +26,13 @@ phy_status_t phy_read_reg(phy_handle_base_t *dev, uint8_t mmd_addr, uint16_t reg
 
         /* Clause 22 direct access */
         if (mmd_addr == 0) {
+
+            /* Check the address is valid */
+            if (reg_addr > 0x1f) {
+                status = PHY_INVALID_REG_ADDR_ERROR;
+                PHY_CHECK_RET(status);
+            }
+
             status = dev->callbacks->callback_read_reg_c22(dev->config.phy_addr, reg_addr, data, dev->config.timeout, dev->callback_context);
             PHY_CHECK_RET(status);
         }

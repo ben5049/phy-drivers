@@ -655,7 +655,7 @@ phy_status_t PHY_88Q211X_DisableIEEEPowerDown(phy_handle_88q211x_t *dev) {
     status = PHY_READ_REG(dev, PHY_88Q211X_DEV_BASE_T1_CTRL, PHY_88Q211X_REG_BASE_T1_CTRL, &reg_data);
     PHY_CHECK_END(status);
 
-    /* If powered down the clear the low power bit */
+    /* If powered down then clear the low power bit */
     if (reg_data & PHY_88Q211X_IEEE_POWER_DOWN) {
         reg_data &= ~PHY_88Q211X_IEEE_POWER_DOWN;
         status    = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_BASE_T1_CTRL, PHY_88Q211X_REG_BASE_T1_CTRL, reg_data);

@@ -13,12 +13,32 @@ extern "C" {
 #endif
 
 
+#include "phy_io.h"
+
 #include "dp83867.h"
 
 
 /* What to put in the MMD address field */
 #define PHY_DP83867_MMD_BASIC    (0x00)
 #define PHY_DP83867_MMD_EXTENDED (0x1f)
+
+
+static inline phy_status_t phy_dp83867_write_reg(phy_handle_dp83867_t *dev, uint16_t addr, uint16_t data) {
+    if (addr <= 0x1f) {
+        return PHY_WRITE_REG(dev, PHY_DP83867_MMD_BASIC, addr, data);
+    } else {
+        return PHY_WRITE_REG(dev, PHY_DP83867_MMD_EXTENDED, addr, data);
+    }
+}
+
+static inline phy_status_t phy_dp83867_read_reg(phy_handle_dp83867_t *dev, uint16_t addr, uint16_t *data) {
+    if (addr <= 0x1f) {
+        return PHY_READ_REG(dev, PHY_DP83867_MMD_BASIC, addr, data);
+    } else {
+        return PHY_READ_REG(dev, PHY_DP83867_MMD_EXTENDED, addr, data);
+    }
+}
+
 
 /* ---------------------------------------------------------------------------- */
 /* Basic Registers */
@@ -39,6 +59,19 @@ enum phy_dp83867_basic_reg_e {
     PHY_DP83867_REG_BASIC_REGCR   = 0x0d,
     PHY_DP83867_REG_BASIC_ADDAR   = 0x0e,
     PHY_DP83867_REG_BASIC_A1KSCR  = 0x0f,
+    PHY_DP83867_REG_BASIC_PHYCR   = 0x10,
+    PHY_DP83867_REG_BASIC_PHYSTS  = 0x11,
+    PHY_DP83867_REG_BASIC_MICR    = 0x12,
+    PHY_DP83867_REG_BASIC_ISR     = 0x13,
+    PHY_DP83867_REG_BASIC_CFR2    = 0x14,
+    PHY_DP83867_REG_BASIC_RECR    = 0x15,
+    PHY_DP83867_REG_BASIC_BISCR   = 0x16,
+    PHY_DP83867_REG_BASIC_STS2    = 0x17,
+    PHY_DP83867_REG_BASIC_LEDCR1  = 0x18,
+    PHY_DP83867_REG_BASIC_LEDCR2  = 0x19,
+    PHY_DP83867_REG_BASIC_LEDCR3  = 0x1a,
+    PHY_DP83867_REG_BASIC_CFG3    = 0x1e,
+    PHY_DP83867_REG_BASIC_CTRL    = 0x1f,
 };
 
 /* BMCR */
@@ -49,7 +82,7 @@ enum phy_dp83867_basic_reg_e {
 #define PHY_DP83867_POWER_DOWN      (1 << 11)
 #define PHY_DP83867_ISOLATE         (1 << 10)
 #define PHY_DP83867_AUTONEG_RESTART (1 << 9)
-#define PHY_DP83867_DUPLEX          (1 << 8)
+#define PHY_DP83867_BMCR_DUPLEX     (1 << 8)
 #define PHY_DP83867_COL_TEST        (1 << 7)
 #define PHY_DP83867_SPEED_MSB       (1 << 6)
 
@@ -80,27 +113,29 @@ enum phy_dp83867_basic_reg_e {
 #define PHY_DP83867_REVISION_NUMBER_SHIFT (0)
 #define PHY_DP83867_REVISION_NUMBER_MASK  (0x000f << PHY_DP83867_REVISION_NUMBER_SHIFT)
 
+/* PHYCR */
+#define PHY_DP83867_DISABLE_CLK125 (1 << 4)
+
+/* PHYSTS */
+#define PHY_DP83867_SPEED_SHIFT    (14)
+#define PHY_DP83867_SPEED_MASK     (0x3 << PHY_DP83867_SPEED_SHIFT)
+#define PHY_DP83867_SPEED_10MBPS   (0x00)
+#define PHY_DP83867_SPEED_100MBPS  (0x01)
+#define PHY_DP83867_SPEED_1000MBPS (0x02)
+#define PHY_DP83867_PHYSTS_DUPLEX  (1 << 13)
+
 /* ---------------------------------------------------------------------------- */
 /* Extended Registers */
 /* ---------------------------------------------------------------------------- */
 
-
 enum phy_dp83867_extended_reg_e {
-    PHY_DP83867_REG_EXT_PHYCR  = 0x0010,
-    PHY_DP83867_REG_EXT_PHYSTS = 0x0011,
-    PHY_DP83867_REG_EXT_MICR   = 0x0012,
-    PHY_DP83867_REG_EXT_ISR    = 0x0013,
-    PHY_DP83867_REG_EXT_CFR2   = 0x0014,
-    PHY_DP83867_REG_EXT_RECR   = 0x0015,
-    PHY_DP83867_REG_EXT_BISCR  = 0x0016,
-    PHY_DP83867_REG_EXT_STS2   = 0x0017,
-    PHY_DP83867_REG_EXT_LEDCR1 = 0x0018,
-    PHY_DP83867_REG_EXT_LEDCR2 = 0x0019,
-    PHY_DP83867_REG_EXT_LEDCR3 = 0x001a,
-    PHY_DP83867_REG_EXT_CFG3   = 0x001e,
-    PHY_DP83867_REG_EXT_CTRL   = 0x001f,
 
-    // TODO: Many more
+    PHY_DP83867_REG_EXT_MSE_CHANNEL_A = 0x0225,
+    PHY_DP83867_REG_EXT_MSE_CHANNEL_B = 0x0265,
+    PHY_DP83867_REG_EXT_MSE_CHANNEL_C = 0x02a5,
+    PHY_DP83867_REG_EXT_MSE_CHANNEL_D = 0x02e5,
+
+    // TODO: add more
 };
 
 

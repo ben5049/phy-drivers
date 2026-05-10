@@ -150,8 +150,7 @@ phy_status_t PHY_GetSQI(void *dev, uint8_t *sqi) {
             break;
 
         case (PHY_VARIANT_DP83867):
-            *sqi   = PHY_SQI_INVALID;
-            status = PHY_OK; /* TODO: implement */
+            status = PHY_DP83867_GetSQI(dev, sqi);
             break;
 
         default:
@@ -223,6 +222,37 @@ phy_status_t PHY_SetSpeed(void *dev, phy_speed_t speed) {
 }
 
 
+phy_status_t PHY_GetDuplex(void *dev, phy_duplex_t *duplex) {
+
+    phy_status_t status = PHY_OK;
+
+    switch (((phy_handle_base_t *) dev)->config.variant) {
+
+        case (PHY_VARIANT_88Q2110):
+        case (PHY_VARIANT_88Q2112):
+            status = PHY_88Q211X_GetDuplex(dev, duplex);
+            break;
+
+        /* Always half duplex */
+        case (PHY_VARIANT_LAN8670):
+        case (PHY_VARIANT_LAN8671):
+        case (PHY_VARIANT_LAN8672):
+            *duplex = PHY_HALF_DUPLEX;
+            break;
+
+        case (PHY_VARIANT_DP83867):
+            status = PHY_DP83867_GetDuplex(dev, duplex);
+            break;
+
+        default:
+            status = PHY_PARAMETER_ERROR;
+            break;
+    }
+
+    return status;
+}
+
+
 phy_status_t PHY_EnableTemperatureSensor(void *dev) {
 
     phy_status_t status = PHY_OK;
@@ -237,11 +267,8 @@ phy_status_t PHY_EnableTemperatureSensor(void *dev) {
         case (PHY_VARIANT_LAN8670):
         case (PHY_VARIANT_LAN8671):
         case (PHY_VARIANT_LAN8672):
-            break; /* No temperature sensor available on this PHY */
-
         case (PHY_VARIANT_DP83867):
-            status = PHY_NOT_IMPLEMENTED_ERROR;
-            break;
+            break; /* No temperature sensors available on these PHYs */
 
         default:
             status = PHY_PARAMETER_ERROR;
@@ -266,11 +293,8 @@ phy_status_t PHY_ReadTemperature(void *dev, float *temp, bool *valid) {
         case (PHY_VARIANT_LAN8670):
         case (PHY_VARIANT_LAN8671):
         case (PHY_VARIANT_LAN8672):
-            *valid = false; /* No temperature sensor available on this PHY */
-            break;
-
         case (PHY_VARIANT_DP83867):
-            status = PHY_NOT_IMPLEMENTED_ERROR;
+            *valid = false; /* No temperature sensors available on these PHYs */
             break;
 
         default:
@@ -300,7 +324,7 @@ phy_status_t PHY_Sleep(void *dev) {
             break;
 
         case (PHY_VARIANT_DP83867):
-            status = PHY_OK; /* TODO: implement */
+            status = PHY_DP83867_EnableIEEEPowerDown(dev);
             break;
 
         default:
@@ -330,7 +354,7 @@ phy_status_t PHY_Wake(void *dev) {
             break;
 
         case (PHY_VARIANT_DP83867):
-            status = PHY_OK; /* TODO: implement */
+            status = PHY_DP83867_DisableIEEEPowerDown(dev);
             break;
 
         default:

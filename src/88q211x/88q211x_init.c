@@ -73,20 +73,6 @@ static phy_status_t PHY_88Q211X_SoftwareResetCopper(phy_handle_88q211x_t *dev) {
     status    = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_BASE_T1_CTRL, PHY_88Q211X_REG_BASE_T1_CTRL, reg_data);
     PHY_CHECK_RET(status);
 
-    /* Reset other copper */
-    // status = PHY_READ_REG(dev, 0x03, 0x0900, &reg_data);
-    // PHY_CHECK_RET(status);
-    // reg_data |= 0x8000;
-    // status = PHY_WRITE_REG(dev, 0x03, 0x0900, reg_data);
-    // PHY_CHECK_RET(status);
-
-    /* Reset other other copper */
-    // status = PHY_READ_REG(dev, 0x07, 0x0200, &reg_data);
-    // PHY_CHECK_RET(status);
-    // reg_data |= 0x8000;
-    // status = PHY_WRITE_REG(dev, 0x07, 0x0200, reg_data);
-    // PHY_CHECK_RET(status);
-
     return status;
 }
 

@@ -55,7 +55,7 @@ typedef struct {
     uint32_t        timeout;       /* Timeout in ms for doing anything with a timeout (read, write, take mutex etc) */
 
     /* PHY Specific attributes */
-
+    bool clk125; /* Whether the 125MHz clock should be output or not */
 
 } phy_config_dp83867_t;
 
@@ -99,8 +99,8 @@ phy_status_t PHY_DP83867_GetDuplex(phy_handle_dp83867_t *dev, phy_duplex_t *dupl
 
 phy_status_t PHY_DP83867_GetSQI(phy_handle_dp83867_t *dev, uint8_t *sqi);
 
-phy_status_t PHY_DP83867_EnableTemperatureSensor(phy_handle_dp83867_t *dev);
-phy_status_t PHY_DP83867_ReadTemperature(phy_handle_dp83867_t *dev, float *temp, bool *valid);
+phy_status_t PHY_DP83867_EnableIEEEPowerDown(phy_handle_dp83867_t *dev);
+phy_status_t PHY_DP83867_DisableIEEEPowerDown(phy_handle_dp83867_t *dev);
 
 
 #ifdef __cplusplus

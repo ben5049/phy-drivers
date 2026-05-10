@@ -22,14 +22,14 @@ static phy_status_t PHY_DP83867_CheckID(phy_handle_dp83867_t *dev) {
     uint8_t      revision = 0;
 
     /* Read the first ID register */
-    status = PHY_READ_REG(dev, PHY_DP83867_MMD_BASIC, PHY_DP83867_REG_BASIC_PHYIDR1, &reg_data);
+    status = phy_dp83867_read_reg(dev, PHY_DP83867_REG_BASIC_PHYIDR1, &reg_data);
     PHY_CHECK_RET(status);
 
     /* Get bits 3:18 of the organisationally unique identifier */
     oui |= (uint32_t) ((reg_data & PHY_DP83867_OUI_3_18_MASK) >> PHY_DP83867_OUI_3_18_SHIFT) << 6;
 
     /* Read the second ID register */
-    status = PHY_READ_REG(dev, PHY_DP83867_MMD_BASIC, PHY_DP83867_REG_BASIC_PHYIDR2, &reg_data);
+    status = phy_dp83867_read_reg(dev, PHY_DP83867_REG_BASIC_PHYIDR2, &reg_data);
     PHY_CHECK_RET(status);
 
     /* Get bits 19:24 of the organisationally unique identifier and check it is correct */
@@ -58,14 +58,14 @@ static phy_status_t PHY_DP83867_SoftwareReset(phy_handle_dp83867_t *dev) {
 
     /* Set the reset bit */
     reg_data |= PHY_DP83867_RESET;
-    status    = PHY_WRITE_REG(dev, PHY_DP83867_MMD_BASIC, PHY_DP83867_REG_BASIC_BMCR, reg_data);
+    status    = phy_dp83867_write_reg(dev, PHY_DP83867_REG_BASIC_BMCR, reg_data);
     PHY_CHECK_RET(status);
 
     /* Poll the reset bit */
     for (uint_fast8_t i = 0; (i < 16) && !reset_complete; i++) {
 
         /* Read the control register */
-        status = PHY_READ_REG(dev, PHY_DP83867_MMD_BASIC, PHY_DP83867_REG_BASIC_BMCR, &reg_data);
+        status = phy_dp83867_read_reg(dev, PHY_DP83867_REG_BASIC_BMCR, &reg_data);
         PHY_CHECK_RET(status);
 
         /* Check if the bit has been cleared */
@@ -77,6 +77,38 @@ static phy_status_t PHY_DP83867_SoftwareReset(phy_handle_dp83867_t *dev) {
     }
 
     DP83867_CLEAR_STATE(dev);
+
+    return status;
+}
+
+
+static phy_status_t PHY_DP83867_SetClk125(phy_handle_dp83867_t *dev) {
+
+    phy_status_t status   = PHY_OK;
+    uint16_t     reg_data = 0;
+    bool         update   = false;
+
+    /* Read the PHY control register */
+    status = phy_dp83867_read_reg(dev, PHY_DP83867_REG_BASIC_PHYCR, &reg_data);
+    PHY_CHECK_RET(status);
+
+    /* Disabled but supposed to be enabled */
+    if ((reg_data & PHY_DP83867_DISABLE_CLK125) && dev->config.clk125) {
+        reg_data &= ~PHY_DP83867_DISABLE_CLK125;
+        update    = true;
+    }
+
+    /* Enabled but supposed to be disabled */
+    else if (!(reg_data & PHY_DP83867_DISABLE_CLK125) && !dev->config.clk125) {
+        reg_data |= PHY_DP83867_DISABLE_CLK125;
+        update    = true;
+    }
+
+    /* Write the PHY control register if required */
+    if (update) {
+        status = phy_dp83867_write_reg(dev, PHY_DP83867_REG_BASIC_PHYCR, reg_data);
+        PHY_CHECK_RET(status);
+    }
 
     return status;
 }
@@ -140,11 +172,14 @@ phy_status_t PHY_DP83867_Init(phy_handle_dp83867_t *dev, const phy_config_dp8386
     status = PHY_DP83867_SoftwareReset(dev);
     PHY_CHECK_END(status);
 
+    /* Enabled or disable the 125MHz clock output (based on config) */
+    status = PHY_DP83867_SetClk125(dev);
+    PHY_CHECK_END(status);
+
     /* TODO:
      *  - Enable autoneg
      *  - Enable temp sensor
      *  - Enable SQI
-     *  - Disable output clock
      *  - Enable 1ns clock skew
      */
 

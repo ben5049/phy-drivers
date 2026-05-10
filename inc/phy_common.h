@@ -54,6 +54,7 @@ typedef enum {
     PHY_NOT_IMPLEMENTED_ERROR,
     PHY_INVALID_PHY_ADDR_ERROR,
     PHY_INVALID_MMD_ERROR,
+    PHY_INVALID_REG_ADDR_ERROR,
     PHY_INVALID_VARIANT_ERROR,
     PHY_INVALID_INTERFACE_ERROR,
     PHY_INVALID_ROLE_ERROR,
@@ -188,6 +189,8 @@ phy_status_t PHY_GetSQI(void *dev, uint8_t *sqi);
 
 phy_status_t PHY_GetSpeed(void *dev, phy_speed_t *speed);
 phy_status_t PHY_SetSpeed(void *dev, phy_speed_t speed);
+
+phy_status_t PHY_GetDuplex(void *dev, phy_duplex_t *duplex);
 
 phy_status_t PHY_EnableTemperatureSensor(void *dev);
 phy_status_t PHY_ReadTemperature(void *dev, float *temp, bool *valid);
