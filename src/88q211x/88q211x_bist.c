@@ -329,7 +329,7 @@ phy_status_t PHY_88Q211X_Get1000MBISTResults(phy_handle_88q211x_t *dev, bool *er
     PHY_CHECK_END(status);
 
     /* If there were any errors then set error to true */
-    *error = (bool) errors;
+    *error = errors != 0;
 
     /* TODO: Calculate the error percentage */
 
@@ -445,7 +445,7 @@ phy_status_t PHY_88Q211X_GetVCTResults(phy_handle_88q211x_t *dev, phy_cable_stat
     /* Read register 3.FEDC[7] Polarity */
     status = PHY_READ_REG(dev, PHY_88Q211X_DEV_TDR_STATUS_2, PHY_88Q211X_REG_TDR_STATUS_2, &reg_data);
     PHY_CHECK_END(status);
-    vct_polarity = (bool) (reg_data & PHY_88Q211X_TDR_VCT_POLARITY);
+    vct_polarity = (reg_data & PHY_88Q211X_TDR_VCT_POLARITY) != 0;
 
     /* Read register 3.FEDC[6:0] VCT Amplitude */
     vct_amplitude = (reg_data & PHY_88Q211X_TDR_VCT_AMPLITUDE_MASK) >> PHY_88Q211X_TDR_VCT_AMPLITUDE_SHIFT;

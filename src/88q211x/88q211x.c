@@ -143,7 +143,7 @@ phy_status_t PHY_88Q211X_GetLinkState(phy_handle_88q211x_t *dev, bool *linkup) {
         PHY_CHECK_END(status);
 
         /* Extract the link status bit */
-        linkup_internal = (bool) (reg_data & PHY_88Q211X_100BASE_T1_LINK_STATUS);
+        linkup_internal = (reg_data & PHY_88Q211X_100BASE_T1_LINK_STATUS) != 0;
 
     } else if (dev->speed == PHY_SPEED_1G) {
 
@@ -152,7 +152,7 @@ phy_status_t PHY_88Q211X_GetLinkState(phy_handle_88q211x_t *dev, bool *linkup) {
         PHY_CHECK_END(status);
 
         /* Extract the link status bit */
-        linkup_internal = (bool) (reg_data & PHY_88Q211X_100BASE_T1_LINK_STATUS);
+        linkup_internal = (reg_data & PHY_88Q211X_100BASE_T1_LINK_STATUS) != 0;
 
     } else {
         status = PHY_PARAMETER_ERROR;

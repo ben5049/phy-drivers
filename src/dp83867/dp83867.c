@@ -26,7 +26,7 @@ phy_status_t PHY_DP83867_GetLinkState(phy_handle_dp83867_t *dev, bool *linkup) {
     PHY_CHECK_END(status);
 
     /* Extract the link status bit */
-    linkup_internal = (bool) (reg_data & PHY_DP83867_LINK_STATUS);
+    linkup_internal = (reg_data & PHY_DP83867_LINK_STATUS) != 0;
 
     /* If there is a change then call the corresponding callback */
     if (dev->linkup != linkup_internal) {
