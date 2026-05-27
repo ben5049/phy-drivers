@@ -20,10 +20,21 @@ extern "C" {
 #include "phy_common.h"
 
 
-#define MIN(a, b)                 ((a) < (b) ? (a) : (b))
-#define MAX(a, b)                 ((a) > (b) ? (a) : (b))
+#ifndef MIN
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
+#ifndef MAX
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#endif
+
+#ifndef CONSTRAIN
 #define CONSTRAIN(amt, low, high) ((amt) < (low) ? (low) : ((amt) > (high) ? (high) : (amt)))
-#define ABS(a)                    ((a) > 0 ? (a) : -(a))
+#endif
+
+#ifndef ABS
+#define ABS(a) ((a) > 0 ? (a) : -(a))
+#endif
 
 #define PHY_CHECK_RET(status)                \
     do {                                     \
