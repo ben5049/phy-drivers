@@ -58,15 +58,15 @@ phy_status_t PHY_88Q211X_EnableInterrupts(phy_handle_88q211x_t *dev) {
     PHY_CHECK_END(status);
 
     /* Configure 100BASE-T1 specific interrupts. TODO: Enable error interrupts */
-    // reg_data  = 0;
-    // reg_data |= PHY_88Q211X_100BASE_T1_LINK_STATUS_CHANGE;
-    // status = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_100BASE_T1_INT_EN_1, PHY_88Q211X_REG_100BASE_T1_INT_EN_1, reg_data);
-    // PHY_CHECK_END(status);
+    reg_data  = 0;
+    reg_data |= PHY_88Q211X_100BASE_T1_LINK_STATUS_CHANGE;
+    status    = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_100BASE_T1_INT_EN_1, PHY_88Q211X_REG_100BASE_T1_INT_EN_1, reg_data);
+    PHY_CHECK_END(status);
 
     /* Configure 100BASE-T1 MAC specific interrupts. TODO: Enable error interrupts */
-    // reg_data = 0;
-    // status = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_MAC_INT_EN, PHY_88Q211X_REG_MAC_INT_EN, reg_data);
-    // PHY_CHECK_END(status);
+    reg_data = 0;
+    status   = PHY_WRITE_REG(dev, PHY_88Q211X_DEV_MAC_INT_EN, PHY_88Q211X_REG_MAC_INT_EN, reg_data);
+    PHY_CHECK_END(status);
 
     /* TODO: Configure SGMII specific interrupts. TODO: Enable error interrupts */
 

@@ -335,8 +335,8 @@ enum phy_88q211x_1000base_t1_pcs_dev_e {
 
 };
 
-#define PHY_88Q211X_INT_OPEN_DRAIN            (1 << 8)
-#define PHY_88Q211X_INT_OPEN_SOURCE           (1 << 9)
+#define PHY_88Q211X_INT_OPEN_SOURCE           (1 << 8)
+#define PHY_88Q211X_INT_OPEN_DRAIN            (1 << 9)
 #define PHY_88Q211X_INT_DISABLE_TRI_STATE     (1 << 11)
 
 #define PHY_88Q211X_INT_POLARITY_LOW          (1 << 11)
