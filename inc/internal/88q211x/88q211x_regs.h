@@ -411,11 +411,13 @@ enum phy_88q211x_rgmii_dev_e {
 /* ---------------------------------------------------------------------------- */
 
 enum phy_88q211x_fiber_reg_e {
-    PHY_88Q211X_REG_FIBER_CTRL = 0x8000,
+    PHY_88Q211X_REG_FIBER_CTRL   = 0x8000,
+    PHY_88Q211X_REG_SGMII_INT_EN = 0x8012,
 };
 
 enum phy_88q211x_fiber_dev_e {
-    PHY_88Q211X_DEV_FIBER_CTRL = 0x04,
+    PHY_88Q211X_DEV_FIBER_CTRL   = 0x04,
+    PHY_88Q211X_DEV_SGMII_INT_EN = 0x04,
 };
 
 #define PHY_88Q211X_SGMII_POWER_DOWN (1 << 11)

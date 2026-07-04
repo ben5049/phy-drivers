@@ -364,3 +364,63 @@ phy_status_t PHY_Wake(void *dev) {
 
     return status;
 }
+
+
+phy_status_t PHY_GetIngressLatency(void *dev, uint16_t *ns) {
+
+    phy_status_t status = PHY_OK;
+
+    switch (((phy_handle_base_t *) dev)->config.variant) {
+
+        case (PHY_VARIANT_88Q2110):
+        case (PHY_VARIANT_88Q2112):
+            status = PHY_88Q211X_GetIngressLatency(dev, ns);
+            break;
+
+        case (PHY_VARIANT_LAN8670):
+        case (PHY_VARIANT_LAN8671):
+        case (PHY_VARIANT_LAN8672):
+            *ns = 0; /* No latencies given in datasheet */
+            break;
+
+        case (PHY_VARIANT_DP83867):
+            status = PHY_DP83867_GetIngressLatency(dev, ns);
+            break;
+
+        default:
+            status = PHY_PARAMETER_ERROR;
+            break;
+    }
+
+    return status;
+}
+
+
+phy_status_t PHY_GetEgressLatency(void *dev, uint16_t *ns) {
+
+    phy_status_t status = PHY_OK;
+
+    switch (((phy_handle_base_t *) dev)->config.variant) {
+
+        case (PHY_VARIANT_88Q2110):
+        case (PHY_VARIANT_88Q2112):
+            status = PHY_88Q211X_GetEgressLatency(dev, ns);
+            break;
+
+        case (PHY_VARIANT_LAN8670):
+        case (PHY_VARIANT_LAN8671):
+        case (PHY_VARIANT_LAN8672):
+            *ns = 0; /* No latencies given in datasheet */
+            break;
+
+        case (PHY_VARIANT_DP83867):
+            status = PHY_DP83867_GetEgressLatency(dev, ns);
+            break;
+
+        default:
+            status = PHY_PARAMETER_ERROR;
+            break;
+    }
+
+    return status;
+}

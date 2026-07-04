@@ -158,7 +158,8 @@ phy_status_t PHY_88Q211X_DisableLPSDPowerDown(phy_handle_88q211x_t *dev);
 phy_status_t PHY_88Q211X_WriteTrainingReg(phy_handle_88q211x_t *dev, bool eee, bool oam, uint8_t user_field);
 phy_status_t PHY_88Q211X_ReadTrainingReg(phy_handle_88q211x_t *dev, bool *eee, bool *oam, uint8_t *user_field);
 
-/* TODO: PTP functions */
+phy_status_t PHY_88Q211X_GetIngressLatency(phy_handle_88q211x_t *dev, uint16_t *ns);
+phy_status_t PHY_88Q211X_GetEgressLatency(phy_handle_88q211x_t *dev, uint16_t *ns);
 
 
 #ifdef __cplusplus

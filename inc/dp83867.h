@@ -102,6 +102,9 @@ phy_status_t PHY_DP83867_GetSQI(phy_handle_dp83867_t *dev, uint8_t *sqi);
 phy_status_t PHY_DP83867_EnableIEEEPowerDown(phy_handle_dp83867_t *dev);
 phy_status_t PHY_DP83867_DisableIEEEPowerDown(phy_handle_dp83867_t *dev);
 
+phy_status_t PHY_DP83867_GetIngressLatency(phy_handle_dp83867_t *dev, uint16_t *ns);
+phy_status_t PHY_DP83867_GetEgressLatency(phy_handle_dp83867_t *dev, uint16_t *ns);
+
 
 #ifdef __cplusplus
 }

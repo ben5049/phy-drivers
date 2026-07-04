@@ -198,6 +198,9 @@ phy_status_t PHY_ReadTemperature(void *dev, float *temp, bool *valid);
 phy_status_t PHY_Sleep(void *dev);
 phy_status_t PHY_Wake(void *dev);
 
+phy_status_t PHY_GetIngressLatency(void *dev, uint16_t *ns);
+phy_status_t PHY_GetEgressLatency(void *dev, uint16_t *ns);
+
 
 #ifdef __cplusplus
 }

@@ -7,9 +7,11 @@ add_library(phy_drivers STATIC
     src/88q211x/88q211x_init.c
     src/88q211x/88q211x_xmii.c
     src/88q211x/88q211x_bist.c
+    src/88q211x/88q211x_ptp.c
 
     src/dp83867/dp83867.c
     src/dp83867/dp83867_init.c
+    src/dp83867/dp83867_ptp.c
 
     src/lan867x/lan867x.c
     src/lan867x/lan867x_init.c
